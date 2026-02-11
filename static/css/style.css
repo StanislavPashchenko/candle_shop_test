@@ -83,7 +83,7 @@
 *{box-sizing:border-box}
 
 body{
-    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     margin:0;
     min-height:100vh;
     background: linear-gradient(120deg,var(--bg1),var(--bg2));
@@ -283,9 +283,10 @@ body{
 .hero-lang-switch .lang-switch{display:flex; gap:var(--lang-btn-gap); align-items:center}
 .hero-lang-switch .lang-btn{background:transparent; border:0; cursor:pointer; font-size:var(--lang-btn-font-size); padding:var(--lang-btn-padding); border-radius:var(--lang-btn-border-radius); color:var(--muted)}
 .hero-lang-switch .lang-btn:hover{background:rgba(0,0,0,0.04); color:var(--accent)}
+.hero-actions{display:contents}
 .hero-center{display:flex; flex-direction:column; align-items:center; gap:6px; justify-content:center; margin:0 auto}
 .hero-logo{height:var(--hero-logo-height); width:auto; display:block; border-radius:8px; object-fit:contain}
-.hero-title{margin:0; position:relative; top:var(--hero-title-top); left:var(--hero-title-left); right:var(--hero-title-right); bottom:var(--hero-title-bottom); font-family: 'Poppins', serif; color:#234a5f; font-size:var(--hero-title-size); letter-spacing:1px}
+.hero-title{margin:0; position:relative; top:var(--hero-title-top); left:var(--hero-title-left); right:var(--hero-title-right); bottom:var(--hero-title-bottom); font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#234a5f; font-size:var(--hero-title-size); letter-spacing:1px}
 
 /* If there is no banner image, fall back to decorative gradients and soft lotus-like side shapes */
 .hero-header:not(:has(img[src*="header-banner.jpg"]))::before{
@@ -302,19 +303,6 @@ body{
     .hero-inner{height:var(--hero-inner-height-sm)}
     .hero-logo{height:var(--hero-logo-height-sm)}
     .hero-title{font-size:var(--hero-title-size-sm)}
-
-    .hero-langs{
-        left: 60px;
-        top: 4px; /* мобильное смещение вверх */
-        display: flex;
-        gap: 2px;
-    }
-
-    .hero-cart{
-        right: 8px;
-        bottom: 8px;
-        top: auto;
-    }
 }
 
 
@@ -360,14 +348,14 @@ body{
 .category-top li button{
     display:inline-block;
     padding:8px 12px;
-    border-radius:10px;
-    background:transparent;
+    border-radius:999px;
+    background: rgba(255,255,255,0.72);
     color:var(--muted);
     font-weight:700;
     text-decoration:none;
-    border:1px solid transparent;
+    border:1px solid rgba(0,0,0,0.06);
     transition: all 180ms ease;
-    box-shadow: 0 4px 10px rgba(16,12,8,0.03);
+    box-shadow: 0 8px 18px rgba(16,12,8,0.06);
 }
 .category-top li a:hover,
 .category-top li button:hover{
@@ -398,6 +386,40 @@ body{
     color: #fff;
 }
 
+.search-toggle{
+    appearance:none;
+    border:1px solid rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.72);
+    color: var(--muted);
+    border-radius:999px;
+    width:40px;
+    height:40px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow: 0 8px 18px rgba(16,12,8,0.06);
+    transition: all 180ms ease;
+}
+
+.search-toggle:hover{
+    background: var(--accent);
+    color:#fff;
+    transform: translateY(-2px);
+}
+
+.search-modal{display:none; position:fixed; inset:0; z-index:9999}
+.search-modal.is-open{display:block}
+.search-modal__backdrop{position:absolute; inset:0; background: rgba(10,18,24,0.35); backdrop-filter: blur(6px)}
+.search-modal__panel{position:relative; z-index:2; width:min(560px, calc(100vw - 24px)); margin: 14vh auto 0; background: rgba(255,255,255,0.98); border:1px solid rgba(0,0,0,0.06); border-radius:16px; box-shadow: 0 18px 60px rgba(16,12,8,0.22)}
+.search-modal__form{display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:center; padding:12px}
+.search-modal__input{width:100%; height:44px; border-radius:12px; border:1px solid rgba(0,0,0,0.08); padding:0 12px; outline:none; font-size:1rem; color:var(--muted); background:#fff}
+.search-modal__input:focus{border-color: rgba(106, 163, 214, 0.8); box-shadow: 0 8px 22px rgba(40,90,140,0.12)}
+.search-modal__submit{height:44px; padding:0 14px; border-radius:12px; border:0; background: var(--accent); color:#fff; font-weight:800; cursor:pointer}
+.search-modal__submit:hover{background:#5a8cc6}
+.search-modal__close{position:absolute; right:8px; top:8px; width:36px; height:36px; border-radius:12px; border:0; background:transparent; cursor:pointer; font-size:22px; line-height:1; color:var(--muted)}
+.search-modal__close:hover{background: rgba(106, 163, 214, 0.12); color: var(--accent)}
+
 @media (min-width:921px){
     .category-mobile-only{display:none}
     .cat-toggle{display:none}
@@ -417,7 +439,10 @@ body{
     box-shadow: 0 14px 40px rgba(16,12,8,0.16);
     overflow: auto;
 }
-.mobile-categories__header{display:none}
+.mobile-categories__header{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(0,0,0,0.06)}
+.mobile-categories__title{font-weight:800; color:#234a5f}
+.mobile-categories__close{appearance:none; border:0; background:transparent; cursor:pointer; width:34px; height:34px; border-radius:10px; font-size:22px; line-height:1; color:var(--muted)}
+.mobile-categories__close:hover{background: rgba(106, 163, 214, 0.12); color: var(--accent)}
 .mobile-categories__body{display:flex; flex-direction:column; padding:8px}
 .mobile-categories__link{padding:8px 10px; border-radius:10px; text-decoration:none; color:var(--muted); font-weight:600; font-size:0.92rem}
 .mobile-categories__link:hover{background: rgba(106, 163, 214, 0.12)}
@@ -430,6 +455,32 @@ body{
     .category-bar .container{overflow:visible}
     .category-top{overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%}
     .category-scroll{display:none}
+}
+
+@media (max-width:560px){
+    .category-bar .container{gap:8px}
+    .category-top{
+        width:100%;
+        display:grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap:8px;
+        padding:8px 0;
+    }
+    .category-top li{width:100%}
+    .category-top li a,
+    .category-top li button{
+        width:100%;
+        padding:8px 10px;
+        font-size:0.9rem;
+        box-shadow: 0 8px 18px rgba(16,12,8,0.05);
+        text-align:center;
+    }
+    .cat-toggle{border-radius:999px}
+    .search-toggle{width:100%; height:40px}
+
+    .hero-header .header-search{display:none !important}
+
+    .search-modal__close{display:none !important}
 }
 
 /* Override global .container vertical padding for header sections to reduce header height */
@@ -685,15 +736,83 @@ body{
         font-size: var(--search-font-size);
     }
 
-    /* Мобильная версия: показываем компактный переключатель языков; используем переменные для позиционирования */
+    .hero-inner{
+        height:auto;
+        display:grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "logo actions"
+            "search search";
+        align-items:center;
+        row-gap:10px;
+        padding: 10px 12px;
+    }
+
+    .hero-langs{
+        grid-area:logo;
+        position: static;
+        left:auto;
+        right:auto;
+        top:auto;
+        bottom:auto;
+        gap:0;
+    }
+
+    .hero-actions{
+        grid-area:actions;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        justify-content:flex-end;
+    }
+
+    .hero-lang-switch,
+    .hero-cart{
+        position: static;
+        left:auto;
+        right:auto;
+        top:auto;
+        bottom:auto;
+    }
+
+    .hero-logo{height:44px; border-radius:10px}
+
+    .hero-center{
+        grid-area:search;
+        margin:0;
+        align-items:stretch;
+        gap:0;
+    }
+
+    .hero-title{display:none}
+
+    .header-search{
+        margin:0;
+        position: static;
+        transform:none;
+        top:auto;
+        right:auto;
+        left:auto;
+        bottom:auto;
+    }
+
+    .header-search input{
+        width: 100%;
+        max-width: none;
+        height: 38px;
+        border-radius: 14px;
+        font-size: 0.95rem;
+    }
+
+    /* Мобильная версия: переключатель языка становится частью компактного блока действий */
     .hero-lang-switch{
-        display: flex;
-        left: var(--hero-lang-switch-left, 8px);
-        right: var(--hero-lang-switch-right, auto);
-        top: var(--hero-lang-switch-top, 8px);
-        bottom: var(--hero-lang-switch-bottom, auto);
-        position: absolute;
-        z-index: 4;
+        display:flex;
+        position: static;
+        left:auto;
+        right:auto;
+        top:auto;
+        bottom:auto;
+        z-index:auto;
     }
     .hero-lang-switch .lang-switch{gap:var(--lang-btn-gap)}
     .hero-lang-switch .lang-btn{padding:var(--lang-btn-padding); font-size:var(--lang-btn-font-size)}
@@ -739,7 +858,7 @@ body{
 }
 
 @media (max-width:720px){
-    .hero-lang-switch{display:none}
+    .hero-lang-switch{display:flex}
 }
 
     /* Hero banner */
@@ -1315,24 +1434,24 @@ body.image-modal-open .category-bar{z-index:0}
 /* Принудительное переопределение для мобильных: гарантируем, что поиск и переключатель языков видимы
    Меняйте переменные в :root: --header-search-top, --lang-btn-gap, --lang-btn-padding */
 @media (max-width:560px){
-    .header-search{display:flex !important; justify-content:center !important}
-    .header-search input{width:calc(100% - 48px) !important; max-width:520px !important}
     /* Use variables here with !important so mobile :root values apply */
     .hero-lang-switch{
         display:flex !important;
-        left: var(--hero-lang-switch-left, 8px) !important;
-        right: var(--hero-lang-switch-right, auto) !important;
-        top: var(--hero-lang-switch-top, 8px) !important;
-        bottom: var(--hero-lang-switch-bottom, auto) !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
     }
     /* Принудительный gap для переключателя языков, чтобы mobile-переменная точно применялась */
     .hero-lang-switch .lang-switch{gap:var(--lang-btn-gap) !important}
     .hero-cart{
         display: block !important;
-        left: var(--hero-cart-left, auto) !important;
-        right: var(--hero-cart-right, 8px) !important;
-        top: var(--hero-cart-top, auto) !important;
-        bottom: var(--hero-cart-bottom, auto) !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
     }
 }
 

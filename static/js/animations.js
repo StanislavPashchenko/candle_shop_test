@@ -168,6 +168,73 @@
         if(openRoot) position(openRoot);
     }, {passive:true});
 })();
+
+// Search modal
+(function(){
+    const modal = document.querySelector('[data-search-modal]');
+    if(!modal) return;
+
+    const toggles = Array.from(document.querySelectorAll('[data-action="toggle-search"]'));
+    const closeEls = Array.from(modal.querySelectorAll('[data-action="close-search"]'));
+    const panel = modal.querySelector('.search-modal__panel');
+    const input = modal.querySelector('.search-modal__input');
+
+    function setExpanded(isOpen){
+        toggles.forEach(t => t.setAttribute('aria-expanded', isOpen ? 'true' : 'false'));
+    }
+
+    function open(){
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        setExpanded(true);
+        if(panel) panel.focus();
+        if(input){
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 0);
+        }
+    }
+
+    function close(){
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        setExpanded(false);
+    }
+
+    function toggle(){
+        if(modal.classList.contains('is-open')) close();
+        else open();
+    }
+
+    toggles.forEach(btn => {
+        btn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            toggle();
+        });
+    });
+
+    closeEls.forEach(el => {
+        el.addEventListener('click', function(e){
+            e.preventDefault();
+            close();
+        });
+    });
+
+    document.addEventListener('keydown', function(e){
+        if(e.key !== 'Escape') return;
+        close();
+    });
+
+    document.addEventListener('click', function(e){
+        const clickedToggle = e.target.closest('[data-action="toggle-search"]');
+        if(clickedToggle) return;
+        const clickedInside = e.target.closest('[data-search-modal]');
+        if(clickedInside) return;
+        close();
+    });
+})();
 // Add-to-cart visual feedback
 (function(){
     function animateAdd(btn){
