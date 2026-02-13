@@ -9,10 +9,7 @@ from django.views.decorators.http import require_POST
 import json
 import urllib.parse
 import urllib.request
-from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 import logging
 
 logger = logging.getLogger(__name__)
@@ -356,14 +353,7 @@ def checkout(request):
     
     if request.method == 'POST':
         form = _apply_ru_placeholders(OrderForm(request.POST))
-        # Debug logging to trace why emails may not be sent
-        try:
-            logger.info('Checkout POST received')
-            logger.info('Cart items count before validation: %s', len(items))
-        except Exception:
-            logger.exception('Error logging checkout state')
         if form.is_valid() and items:
-            logger.info('OrderForm is valid and items present: items=%s', len(items))
             order = form.save(commit=False)
             
             # Получаем warehouse из скрытого поля
@@ -397,87 +387,6 @@ def checkout(request):
             request.session['cart'] = {}
             request.session.modified = True
 
-            # Отправляем письмо с деталями заказа на ADMIN_EMAIL
-            try:
-                subject = f'Новое заказ #{order.id}'
-                lines = [
-                    f'Заказ #{order.id}',
-                    f'Клиент: {order.full_name}',
-                    f'Телефон: {order.phone}',
-                    f'Email: {order.email}',
-                    f'Город: {order.city}',
-                    f'Отделение: {order.warehouse}',
-                    '',
-                    'Товар:'
-                ]
-                for it in items:
-                    name = it['candle'].display_name() if hasattr(it['candle'], 'display_name') else str(it['candle'])
-                    qty = it['qty']
-                    subtotal = it['subtotal']
-                    lines.append(f'- {name} x{qty} — {subtotal}')
-                lines.append('')
-                lines.append(f'Итого: {total}')
-                if order.notes:
-                    lines.append('')
-                    lines.append(f'Примечания: {order.notes}')
-
-                # Render HTML email template
-                message = '\n'.join(lines)
-                context = {
-                    'order': order,
-                    'items': items,
-                    'total': total,
-                    'site_url': request.build_absolute_uri('/')[:-1].rstrip('/'),
-                }
-                try:
-                    html_content = render_to_string('emails/order_email.html', context)
-                    text_content = strip_tags(html_content)
-                except Exception:
-                    logger.exception('Failed to render email template for order %s', order.id)
-                    html_content = None
-                    text_content = message
-
-                # Render separate customer email template
-                try:
-                    with translation.override('uk'):
-                        cust_html_content = render_to_string('emails/order_email_customer.html', context)
-                        cust_text_content = strip_tags(cust_html_content)
-                except Exception:
-                    logger.exception('Failed to render customer email template for order %s', order.id)
-                    cust_html_content = html_content
-                    cust_text_content = text_content
-
-                # Отправляем администратору (multipart)
-                logger.info('Attempting to send admin email for order %s to %s', order.id, settings.ADMIN_EMAIL)
-                try:
-                    if html_content:
-                        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [settings.ADMIN_EMAIL])
-                        msg.attach_alternative(html_content, 'text/html')
-                        msg.send(fail_silently=False)
-                    else:
-                        send_mail(subject, text_content, settings.DEFAULT_FROM_EMAIL, [settings.ADMIN_EMAIL], fail_silently=False)
-                    logger.info('Admin email sent for order %s', order.id)
-                except Exception:
-                    logger.exception('Failed to send admin email for order %s', order.id)
-
-                # Отправляем копию клиенту (если указан email)
-                if order.email:
-                    logger.info('Attempting to send customer email for order %s to %s', order.id, order.email)
-                    try:
-                        cust_subject = (f'Good Karma Light | Ваше замовлення #{order.id}' if lang == 'uk' else f'Good Karma Light | Ваше замовлення #{order.id}')
-                        if cust_html_content:
-                            msg2 = EmailMultiAlternatives(cust_subject, cust_text_content, settings.DEFAULT_FROM_EMAIL, [order.email])
-                            msg2.attach_alternative(cust_html_content, 'text/html')
-                            msg2.send(fail_silently=False)
-                        else:
-                            send_mail(cust_subject, cust_text_content, settings.DEFAULT_FROM_EMAIL, [order.email], fail_silently=False)
-                        logger.info('Customer email sent for order %s', order.id)
-                    except Exception:
-                        logger.exception('Failed to send order copy to customer for order %s', order.id)
-            except Exception:
-                # Логируем полную трассировку — это поможет понять причину
-                logger.exception('Error sending order email for order %s', order.id)
-
             try:
                 logger.info('Preparing Telegram notification for order %s', order.id)
                 msg_text = _telegram_format_order_message(order, items, total, lang)
@@ -490,13 +399,13 @@ def checkout(request):
             # Редирект на страницу успеха
             return render(request, f'shop/order_success_{lang}.html', {'order': order, 'cart_count': 0})
         else:
-            # Логируем причину, если форма не прошла валидацию или корзина пуста
-            try:
-                logger.info('Form valid: %s, items count: %s', form.is_valid(), len(items))
-                if not form.is_valid():
-                    logger.info('OrderForm errors: %s', form.errors.as_json())
-            except Exception:
-                logger.exception('Error while logging form validation state')
+            template = f'shop/checkout_{lang}.html'
+            return render(request, template, {
+                'form': form,
+                'items': items,
+                'total': total,
+                'cart_count': cart_count
+            })
     else:
         form = _apply_ru_placeholders(OrderForm())
     
@@ -573,5 +482,5 @@ def privacy_policy(request):
     cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/privacy_{lang}.html'
-    contact_email = getattr(settings, 'ADMIN_EMAIL', '') or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+    contact_email = ''
     return render(request, template, {'cart_count': cart_count, 'contact_email': contact_email})
