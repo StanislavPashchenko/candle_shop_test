@@ -479,8 +479,11 @@ def checkout(request):
                 logger.exception('Error sending order email for order %s', order.id)
 
             try:
+                logger.info('Preparing Telegram notification for order %s', order.id)
                 msg_text = _telegram_format_order_message(order, items, total, lang)
-                _telegram_send_message(msg_text)
+                logger.info('Telegram message text prepared, length=%s', len(msg_text))
+                result = _telegram_send_message(msg_text)
+                logger.info('Telegram send result: %s', result)
             except Exception:
                 logger.exception('Error sending Telegram notification for order %s', order.id)
 
