@@ -7,6 +7,8 @@ from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
+import urllib.parse
+import urllib.request
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -14,6 +16,83 @@ from django.utils.html import strip_tags
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _telegram_send_message(text: str) -> bool:
+    token = getattr(settings, 'TELEGRAM_BOT_TOKEN', '') or ''
+    chat_id = getattr(settings, 'TELEGRAM_CHAT_ID', '') or ''
+    if not token or not chat_id:
+        return False
+
+    url = f'https://api.telegram.org/bot{token}/sendMessage'
+    payload = {
+        'chat_id': chat_id,
+        'text': text,
+        'parse_mode': 'HTML',
+        'disable_web_page_preview': True,
+    }
+
+    data = urllib.parse.urlencode(payload).encode('utf-8')
+    req = urllib.request.Request(url, data=data, method='POST')
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = resp.read().decode('utf-8', errors='replace')
+            ok = getattr(resp, 'status', 200) == 200
+            if not ok:
+                logger.error('Telegram sendMessage failed: status=%s body=%s', getattr(resp, 'status', '?'), body[:500])
+            return ok
+    except Exception:
+        logger.exception('Telegram sendMessage exception')
+        return False
+
+
+def _telegram_format_order_message(order, items, total, lang: str) -> str:
+    def esc(s):
+        if s is None:
+            return ''
+        return (str(s)
+                .replace('&', '&amp;')
+                .replace('<', '&lt;')
+                .replace('>', '&gt;'))
+
+    lines = [
+        f'🧾 <b>Новый заказ #{esc(order.id)}</b>' if lang == 'ru' else f'🧾 <b>Нове замовлення #{esc(order.id)}</b>',
+        f'<b>Клиент:</b> {esc(order.full_name)}' if lang == 'ru' else f'<b>Клієнт:</b> {esc(order.full_name)}',
+        f'<b>Телефон:</b> {esc(order.phone)}',
+        f'<b>Email:</b> {esc(order.email)}',
+        f'<b>Город:</b> {esc(order.city)}' if lang == 'ru' else f'<b>Місто:</b> {esc(order.city)}',
+        f'<b>Отделение:</b> {esc(order.warehouse)}' if lang == 'ru' else f'<b>Відділення:</b> {esc(order.warehouse)}',
+    ]
+
+    if getattr(order, 'payment_method', ''):
+        pm = order.payment_method
+        pm_label = pm
+        try:
+            pm_label = dict(getattr(order, 'payment_method', None).field.choices).get(pm, pm)
+        except Exception:
+            pass
+        lines.append((f'<b>Оплата:</b> {esc(pm_label)}' if lang == 'ru' else f'<b>Оплата:</b> {esc(pm_label)}'))
+
+    lines.append('')
+    lines.append('<b>Товары:</b>' if lang == 'ru' else '<b>Товари:</b>')
+    for it in items:
+        candle = it.get('candle')
+        qty = it.get('qty')
+        subtotal = it.get('subtotal')
+        try:
+            name = candle.display_name if not callable(getattr(candle, 'display_name', None)) else candle.display_name()
+        except Exception:
+            name = str(candle)
+        lines.append(f'• {esc(name)} × {esc(qty)} — {esc(subtotal)}')
+
+    lines.append('')
+    lines.append((f'<b>Итого:</b> {esc(total)}' if lang == 'ru' else f'<b>Разом:</b> {esc(total)}'))
+
+    if getattr(order, 'notes', None):
+        lines.append('')
+        lines.append((f'<b>Примечания:</b> {esc(order.notes)}' if lang == 'ru' else f'<b>Нотатки:</b> {esc(order.notes)}'))
+
+    return '\n'.join(lines)
 
 
 def home(request):
@@ -390,6 +469,12 @@ def checkout(request):
             except Exception:
                 # Логируем полную трассировку — это поможет понять причину
                 logger.exception('Error sending order email for order %s', order.id)
+
+            try:
+                msg_text = _telegram_format_order_message(order, items, total, lang)
+                _telegram_send_message(msg_text)
+            except Exception:
+                logger.exception('Error sending Telegram notification for order %s', order.id)
 
             # Редирект на страницу успеха
             return render(request, f'shop/order_success_{lang}.html', {'order': order, 'cart_count': 0})

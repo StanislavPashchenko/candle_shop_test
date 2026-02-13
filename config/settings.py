@@ -207,6 +207,10 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'sn
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'snobys911@gmail.com')
 
+# Telegram notifications (optional)
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '')
+
 # Simple logging to console to help debug email sending during development
 LOGGING = {
     'version': 1,
