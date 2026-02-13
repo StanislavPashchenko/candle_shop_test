@@ -1255,9 +1255,18 @@ body{
 
 
 
-.mobile-categories{display:none; position:fixed; left:var(--mc-left, 12px); top:var(--mc-top, 0px); z-index:9998}
+.mobile-categories{display:none; position:fixed; left:var(--mc-left, 12px); top:var(--mc-top, 0px); bottom:auto; z-index:9998}
 
 .mobile-categories.is-open{display:block}
+
+.mobile-categories.is-bottom{top:auto; bottom:var(--mc-bottom, 74px); left:var(--mc-left, 12px); right:var(--mc-right, 12px)}
+
+.mobile-categories.is-bottom .mobile-categories__panel{
+    width:100%;
+    max-width:min(100%, calc(100vw - 24px));
+    left:0;
+    right:0;
+}
 
 .mobile-categories__backdrop{display:none}
 

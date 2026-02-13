@@ -76,6 +76,8 @@
     const roots = Array.from(document.querySelectorAll('[data-mobile-categories]'));
     if(!roots.length) return;
 
+    window.__openCategoriesFromBottom = false;
+
     function getToggleForRoot(root){
         const host = root.closest('li');
         if(!host) return null;
@@ -86,10 +88,13 @@
         roots.forEach(r => {
             const btn = getToggleForRoot(r);
             r.classList.remove('is-open');
+            r.classList.remove('is-bottom');
             r.setAttribute('aria-hidden', 'true');
             r.style.removeProperty('--mc-top');
             r.style.removeProperty('--mc-left');
             r.style.removeProperty('--mc-width');
+            r.style.removeProperty('--mc-bottom');
+            r.removeAttribute('data-open-from');
             if(btn) btn.setAttribute('aria-expanded', 'false');
         });
     }
@@ -104,15 +109,32 @@
         const sidePad = 18;
         const desiredWidth = Math.min(320, Math.floor(window.innerWidth - (sidePad * 2)));
         const left = Math.max(sidePad, Math.min(Math.floor(btnRect.left), Math.floor(window.innerWidth - desiredWidth - sidePad)));
-        const top = Math.floor(barRect.bottom + 8);
         root.style.setProperty('--mc-left', left + 'px');
-        root.style.setProperty('--mc-top', top + 'px');
         root.style.setProperty('--mc-width', desiredWidth + 'px');
         if(panel) panel.style.maxWidth = (window.innerWidth - (sidePad * 2)) + 'px';
+
+        const openFrom = root.getAttribute('data-open-from');
+        if(openFrom === 'bottom'){
+            const bottomNav = document.querySelector('.mobile-bottom-nav');
+            const navRect = bottomNav ? bottomNav.getBoundingClientRect() : null;
+            const bottomOffset = Math.max(12, Math.floor((navRect ? (window.innerHeight - navRect.top) : 74) + 8));
+            root.classList.add('is-bottom');
+            root.style.setProperty('--mc-bottom', bottomOffset + 'px');
+            root.style.setProperty('--mc-left', '12px');
+            root.style.setProperty('--mc-right', '12px');
+            root.style.removeProperty('--mc-top');
+        } else {
+            const top = Math.floor(barRect.bottom + 8);
+            root.classList.remove('is-bottom');
+            root.style.setProperty('--mc-top', top + 'px');
+            root.style.removeProperty('--mc-bottom');
+            root.style.removeProperty('--mc-right');
+        }
     }
 
-    function open(root){
+    function open(root, openFrom){
         closeAll();
+        root.setAttribute('data-open-from', openFrom === 'bottom' ? 'bottom' : 'top');
         const btn = getToggleForRoot(root);
         root.classList.add('is-open');
         root.setAttribute('aria-hidden', 'false');
@@ -122,9 +144,9 @@
         if(panel) panel.focus();
     }
 
-    function toggle(root){
+    function toggle(root, openFrom){
         if(root.classList.contains('is-open')) closeAll();
-        else open(root);
+        else open(root, openFrom);
     }
 
     roots.forEach(root => {
@@ -134,7 +156,9 @@
         btn.addEventListener('click', function(e){
             e.preventDefault();
             e.stopPropagation();
-            toggle(root);
+            const openFrom = window.__openCategoriesFromBottom ? 'bottom' : 'top';
+            window.__openCategoriesFromBottom = false;
+            toggle(root, openFrom);
         });
 
         root.addEventListener('click', function(e){
@@ -242,6 +266,7 @@
         const btn = e.target.closest('[data-action="mobile-bottom-categories"]');
         if(!btn) return;
         e.preventDefault();
+        window.__openCategoriesFromBottom = true;
         const toggle = document.querySelector('[data-action="toggle-categories"]');
         if(toggle) toggle.click();
     });
