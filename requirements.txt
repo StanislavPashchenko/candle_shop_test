@@ -1,4 +1,4 @@
 python-dotenv
-Django==6.0.1
+Django==5.2.11
 mysqlclient
 Pillow
