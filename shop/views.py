@@ -70,13 +70,18 @@ def _telegram_format_order_message(order, items, total, lang: str) -> str:
     ]
 
     if getattr(order, 'payment_method', ''):
-        pm = order.payment_method
-        pm_label = pm
-        try:
-            pm_label = dict(getattr(order, 'payment_method', None).field.choices).get(pm, pm)
-        except Exception:
-            pass
-        lines.append((f'<b>Оплата:</b> {esc(pm_label)}' if lang == 'ru' else f'<b>Оплата:</b> {esc(pm_label)}'))
+        pm = str(order.payment_method)
+        if lang == 'ru':
+            pm_label = {
+                'card': 'Оплата картой',
+                'cod': 'Оплата наложенным платежом',
+            }.get(pm, pm)
+        else:
+            pm_label = {
+                'card': 'Оплата карткою',
+                'cod': 'Оплата накладеним платежем',
+            }.get(pm, pm)
+        lines.append(f'<b>Оплата:</b> {esc(pm_label)}')
 
     lines.append('')
     lines.append('<b>Товары:</b>' if lang == 'ru' else '<b>Товари:</b>')
