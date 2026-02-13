@@ -41,10 +41,11 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-6r_&hxu5e@y-e0
 DEBUG = os.environ.get('DJANGO_DEBUG') == 'True'
 
 ALLOWED_HOSTS = [
-    'candleshop.pythonanywhere.com',
+    'candleshoptest.pythonanywhere.com',
     '127.0.0.1',
     'localhost',
 ]
+
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.ngrok-free.dev",
