@@ -76,6 +76,7 @@
         <ul class="category-top">
             <li class="category-mobile-only"><a href="{% url 'home' %}">{% trans "Главная" %}</a></li>
             <li class="category-mobile-only"><a href="{% url 'product_list' %}">{% trans "Все товары" %}</a></li>
+            <li class="category-desktop-only"><a class="category-link--all" href="{% url 'home' %}">{% trans "Главная" %}</a></li>
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">{% trans "Все товары" %}</a></li>
             {% for cat in all_categories %}
             <li class="category-desktop-only"><a href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a></li>
