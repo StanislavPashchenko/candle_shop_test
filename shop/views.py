@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 def _telegram_send_message(text: str) -> bool:
     token = getattr(settings, 'TELEGRAM_BOT_TOKEN', '') or ''
     chat_id = getattr(settings, 'TELEGRAM_CHAT_ID', '') or ''
+    logger.info('Telegram: token present=%s, chat_id=%s', bool(token), chat_id)
     if not token or not chat_id:
+        logger.warning('Telegram: missing token or chat_id')
         return False
 
     url = f'https://api.telegram.org/bot{token}/sendMessage'
@@ -40,7 +42,13 @@ def _telegram_send_message(text: str) -> bool:
             ok = getattr(resp, 'status', 200) == 200
             if not ok:
                 logger.error('Telegram sendMessage failed: status=%s body=%s', getattr(resp, 'status', '?'), body[:500])
+            else:
+                logger.info('Telegram message sent successfully')
             return ok
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8', errors='replace')[:500]
+        logger.error('Telegram HTTPError: status=%s body=%s', e.code, error_body)
+        return False
     except Exception:
         logger.exception('Telegram sendMessage exception')
         return False
