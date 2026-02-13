@@ -1,4 +1,4 @@
-python-dotenv
 Django==5.2.11
-mysqlclient
-Pillow
+python-dotenv==1.2.1
+mysqlclient==2.2.8
+Pillow==12.1.1
