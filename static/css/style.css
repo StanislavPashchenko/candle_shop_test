@@ -1923,6 +1923,8 @@ body{
 
         display:flex;
 
+        flex-wrap:nowrap;
+
         align-items:center;
 
         justify-content:space-between;
@@ -1953,7 +1955,7 @@ body{
 
 
 
-    .hero-actions{display:flex; align-items:center; gap:10px; justify-content:flex-end; margin-top:10px}
+    .hero-actions{display:flex; align-items:center; gap:10px; justify-content:flex-end; margin-top:0; flex-shrink:0}
 
 
 
@@ -1965,9 +1967,9 @@ body{
 
         left: auto;
 
-        right:10px;
+        right:auto;
 
-        top:0px;
+        top:auto;
 
         bottom:auto;
 
@@ -1975,7 +1977,7 @@ body{
 
 
 
-    .hero-logo{height:60px; width:auto; border-radius:10px; position:relative ; top:auto; left:-10px}
+    .hero-logo{height:60px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:100%}
 
 
 
@@ -1993,7 +1995,7 @@ body{
 
     /* Мобильная версия: переключатель языка становится частью компактного блока действий */
 
-    .hero-lang-switch{display:flex; position: relative; left:auto; right:auto; top:8px; bottom:auto; z-index:auto}
+    .hero-lang-switch{display:flex; position: relative; left:auto; right:auto; top:auto; bottom:auto; z-index:auto}
 
     .hero-lang-switch .lang-switch{gap:var(--lang-btn-gap)}
 
