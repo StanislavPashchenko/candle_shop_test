@@ -2171,7 +2171,7 @@ body{
 
     height:220px; 
 
-    object-fit:cover; 
+    object-fit:contain; 
 
     display:block; 
 
@@ -2185,7 +2185,7 @@ body{
 
 .card:hover img{
 
-    transform: scale(1.05);
+    transform: none;
 
 }
 
@@ -2575,7 +2575,7 @@ body{
 
 .hits-grid{display:grid; gap:18px; grid-template-columns: repeat(3, 1fr)}
 
-.hits-grid .card img{height:200px; object-fit:cover}
+.hits-grid .card img{height:200px; object-fit:contain}
 
 
 
