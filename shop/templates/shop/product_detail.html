@@ -4,11 +4,29 @@
 {% block content %}
 <div class="product-detail">
     <div class="media">
-        {% if candle.image and candle.image.url %}
-            <img id="productImage" class="clickable-image" src="{{ candle.image.url }}" alt="{{ candle.name }}" onclick="openImageModal(this)">
-        {% else %}
-            <img id="productImage" class="clickable-image" src="https://picsum.photos/seed/{{ candle.pk|default:0 }}/800/600" alt="{{ candle.name }}" onclick="openImageModal(this)">
-        {% endif %}
+        <div class="product-gallery" id="productGallery" data-images="{% for u in images %}{{ u }}{% if not forloop.last %}||{% endif %}{% endfor %}">
+            {% if images and images.0 %}
+                <img id="productImage" class="clickable-image" src="{{ images.0 }}" alt="{{ candle.name }}" onclick="openImageModal(this)">
+            {% elif candle.image and candle.image.url %}
+                <img id="productImage" class="clickable-image" src="{{ candle.image.url }}" alt="{{ candle.name }}" onclick="openImageModal(this)">
+            {% else %}
+                <img id="productImage" class="clickable-image" src="https://picsum.photos/seed/{{ candle.pk|default:0 }}/800/600" alt="{{ candle.name }}" onclick="openImageModal(this)">
+            {% endif %}
+
+            {% if images|length > 1 %}
+                <div class="gallery-controls">
+                    <button type="button" class="gallery-nav" onclick="galleryPrev()">‹</button>
+                    <div class="gallery-thumbs">
+                        {% for u in images %}
+                            <button type="button" class="gallery-thumb" data-idx="{{ forloop.counter0 }}" onclick="gallerySetFromThumb(this)">
+                                <img src="{{ u }}" alt="{{ candle.name }}">
+                            </button>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="gallery-nav" onclick="galleryNext()">›</button>
+                </div>
+            {% endif %}
+        </div>
     </div>
     <div class="meta">
         <h2>{{ candle.display_name }}</h2>
@@ -30,6 +48,85 @@
 </div>
 
 <script>
+let galleryIndex = 0;
+let touchStartX = null;
+
+function getGalleryImages() {
+    const el = document.getElementById('productGallery');
+    if (!el) return [];
+    const raw = el.getAttribute('data-images') || '';
+    if (!raw) return [];
+    return raw.split('||').filter(Boolean);
+}
+
+function galleryUpdateActiveThumb() {
+    const thumbs = document.querySelectorAll('.gallery-thumb');
+    thumbs.forEach((t) => t.classList.remove('is-active'));
+    const active = document.querySelector(`.gallery-thumb[data-idx="${galleryIndex}"]`);
+    if (active) {
+        active.classList.add('is-active');
+        if (active.scrollIntoView) {
+            active.scrollIntoView({block: 'nearest', inline: 'nearest'});
+        }
+    }
+}
+
+function gallerySet(idx) {
+    const imgs = getGalleryImages();
+    if (!imgs.length) return;
+    galleryIndex = Math.max(0, Math.min(idx, imgs.length - 1));
+    const imgEl = document.getElementById('productImage');
+    if (imgEl) imgEl.src = imgs[galleryIndex];
+    galleryUpdateActiveThumb();
+}
+
+function gallerySetFromThumb(btn) {
+    const idx = Number(btn && btn.dataset ? btn.dataset.idx : 0);
+    gallerySet(isNaN(idx) ? 0 : idx);
+}
+
+function galleryPrev() {
+    const imgs = getGalleryImages();
+    if (!imgs.length) return;
+    galleryIndex = (galleryIndex - 1 + imgs.length) % imgs.length;
+    gallerySet(galleryIndex);
+}
+
+function galleryNext() {
+    const imgs = getGalleryImages();
+    if (!imgs.length) return;
+    galleryIndex = (galleryIndex + 1) % imgs.length;
+    gallerySet(galleryIndex);
+}
+
+document.addEventListener('keydown', function(e) {
+    const imgs = getGalleryImages();
+    if (imgs.length <= 1) return;
+    if (document.body.classList.contains('image-modal-open')) return;
+    if (e.key === 'ArrowLeft') galleryPrev();
+    if (e.key === 'ArrowRight') galleryNext();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    galleryUpdateActiveThumb();
+    const imgEl = document.getElementById('productImage');
+    if (!imgEl) return;
+    imgEl.addEventListener('touchstart', function(e) {
+        if (!e.touches || !e.touches.length) return;
+        touchStartX = e.touches[0].clientX;
+    }, {passive: true});
+    imgEl.addEventListener('touchend', function(e) {
+        if (touchStartX === null) return;
+        const changed = e.changedTouches && e.changedTouches[0];
+        if (!changed) return;
+        const dx = changed.clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(dx) < 30) return;
+        if (dx > 0) galleryPrev();
+        else galleryNext();
+    }, {passive: true});
+});
+
 function openImageModal(img) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');

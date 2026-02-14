@@ -42,7 +42,7 @@ class CandleAdmin(admin.ModelAdmin):
             'fields': ('name', 'name_ru', 'description', 'description_ru')
         }),
         ('Catalog', {
-            'fields': ('price', 'image', 'category', 'collection', 'order', 'is_hit', 'is_on_sale', 'discount_percent')
+            'fields': ('price', 'image', 'image2', 'image3', 'category', 'collection', 'order', 'is_hit', 'is_on_sale', 'discount_percent')
         }),
     )
     def display_name(self, obj):

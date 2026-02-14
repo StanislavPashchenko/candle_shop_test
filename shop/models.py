@@ -72,6 +72,8 @@ class Candle(models.Model):
     description_ru = models.TextField(blank=True, null=True, verbose_name='Описание (рус)')
     price = models.DecimalField(max_digits=8, decimal_places=2)
     image = models.ImageField(upload_to='candles/')
+    image2 = models.ImageField(upload_to='candles/', blank=True, null=True, verbose_name='Фото 2')
+    image3 = models.ImageField(upload_to='candles/', blank=True, null=True, verbose_name='Фото 3')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Категория')
     order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
     is_hit = models.BooleanField(default=False, verbose_name='Хит продаж')
@@ -119,6 +121,18 @@ class Candle(models.Model):
 
     class Meta:
         ordering = ['order', '-id']
+
+
+class CandleImage(models.Model):
+    candle = models.ForeignKey(Candle, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='candles/')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'{self.candle_id} #{self.id}'
 
 
 class Order(models.Model):

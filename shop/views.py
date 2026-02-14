@@ -231,11 +231,48 @@ def product_list(request):
 
 def product_detail(request, pk):
     candle = get_object_or_404(Candle, pk=pk)
+    images = []
+    seen = set()
+
+    def _add_url(u: str):
+        if not u:
+            return
+        if u in seen:
+            return
+        seen.add(u)
+        images.append(u)
+
+    try:
+        if candle.image and candle.image.url:
+            _add_url(candle.image.url)
+    except Exception:
+        pass
+    try:
+        if getattr(candle, 'image2', None) and candle.image2 and candle.image2.url:
+            _add_url(candle.image2.url)
+    except Exception:
+        pass
+    try:
+        if getattr(candle, 'image3', None) and candle.image3 and candle.image3.url:
+            _add_url(candle.image3.url)
+    except Exception:
+        pass
+
+    # Backward compatibility: if there are CandleImage records, include them too.
+    try:
+        for img in candle.images.all():
+            try:
+                if img.image and img.image.url:
+                    _add_url(img.image.url)
+            except Exception:
+                continue
+    except Exception:
+        pass
     cart = request.session.get('cart', {})
     cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/product_detail_{lang}.html'
-    return render(request, template, {'candle': candle, 'cart_count': cart_count})
+    return render(request, template, {'candle': candle, 'cart_count': cart_count, 'images': images})
 
 
 @require_POST

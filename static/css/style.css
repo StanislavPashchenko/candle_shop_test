@@ -3081,6 +3081,8 @@ body{
 
     display: block;
 
+    margin: 0 auto;
+
     box-shadow: 0 8px 24px rgba(106, 163, 214, 0.15);
 
     transition: transform 300ms ease, box-shadow 300ms ease;
@@ -3097,6 +3099,30 @@ body{
 
     box-shadow: 0 12px 32px rgba(106, 163, 214, 0.25);
 
+}
+
+
+
+.product-gallery{position:relative; width:100%}
+
+.gallery-controls{display:flex; align-items:center; justify-content:center; gap:14px; margin-top:16px}
+
+.gallery-thumbs{display:flex; gap:14px; flex-wrap:nowrap; justify-content:center; align-items:center}
+
+.gallery-thumb{border:0; background:transparent; padding:0; cursor:pointer}
+
+.gallery-thumb img{width:70px; height:70px; object-fit:contain; border-radius:0px; box-shadow:none; background:#fff; border:1px solid rgba(0,0,0,0.10)}
+
+.gallery-thumb.is-active img{border:2px solid rgba(0,0,0,0.65)}
+
+.gallery-nav{border:1px solid rgba(0,0,0,0.20); width:44px; height:44px; border-radius:0px; background:#fff; cursor:pointer; font-size:22px; line-height:42px; color:#4b5560}
+
+.gallery-nav:hover{background:rgba(0,0,0,0.02)}
+
+@media (max-width:860px){
+    .gallery-controls{gap:10px}
+    .gallery-thumbs{overflow-x:auto; -webkit-overflow-scrolling:touch; justify-content:flex-start; padding-bottom:6px; max-width:64vw}
+    .gallery-thumb img{width:64px; height:64px}
 }
 
 
