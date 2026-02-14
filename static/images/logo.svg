@@ -7,19 +7,19 @@
   <g transform="translate(10, 16)">
     <!-- Основной текст -->
     <text x="0" y="36"
-          font-family="Playfair Display, 'Times New Roman', serif"
+          font-family="'Playfair Display', 'Times New Roman', serif"
           font-size="30"
           fill="#234a5f"
-          letter-spacing="0.08em">
+          letter-spacing="1.6">
       Good Karma
     </text>
 
     <!-- Слово Light с тёплым оттенком -->
     <text x="192" y="36"
-          font-family="Playfair Display, 'Times New Roman', serif"
+          font-family="'Playfair Display', 'Times New Roman', serif"
           font-size="30"
           fill="#c28a50"
-          letter-spacing="0.12em">
+          letter-spacing="1.8">
       Light
     </text>
 
@@ -28,7 +28,7 @@
           font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="9"
           fill="#5b6b73"
-          letter-spacing="0.18em">
+          letter-spacing="1.6">
       AROMATIC SOY CANDLES
     </text>
   </g>
