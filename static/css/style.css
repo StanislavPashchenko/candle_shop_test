@@ -1957,6 +1957,10 @@ body{
 
     .hero-actions{display:flex; align-items:center; gap:10px; justify-content:flex-end; margin-top:0; flex-shrink:0}
 
+    .cart-link{padding:4px 8px; gap:4px}
+
+    .cart-icon{width:30px; height:30px}
+
 
 
     .hero-lang-switch,
@@ -2013,15 +2017,9 @@ body{
 
     .brand-logo{
 
-        height: 80px;
+        position: relative;
 
-    }
-
-    
-
-    .header-inner .lang-switch {
-
-        font-size: 0.85rem;
+        left: auto;
 
     }
 
@@ -2078,6 +2076,24 @@ body{
         font-size: 0.85rem;
 
     }
+
+}
+
+
+
+@media (max-width:360px){
+
+    .hero-inner{gap:8px; padding: 6px 10px}
+
+    .hero-actions{gap:8px}
+
+    .hero-logo{height:52px}
+
+    .cart-link{padding:3px 6px; gap:3px}
+
+    .cart-icon{width:28px; height:28px}
+
+    :root{--lang-btn-padding: 3px 5px; --lang-btn-font-size: 0.82rem}
 
 }
 
