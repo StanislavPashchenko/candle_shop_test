@@ -108,7 +108,7 @@
 
      --hero-lang-switch-right: 92px;
 
-     --hero-lang-switch-bottom: 0px;
+     --hero-lang-switch-bottom: 00px;
 
      --hero-lang-switch-left: auto;
 
@@ -1985,9 +1985,11 @@ body{
 
     }
 
+    .hero-cart{transform:translateY(2px)}
 
 
-    .hero-logo{height:30px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:55vw; transform:scale(1.2); transform-origin:left center}
+
+    .hero-logo{height:30px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:55vw; transform:scale(1.1); transform-origin:left center}
 
 
 
@@ -2005,7 +2007,7 @@ body{
 
     /* Мобильная версия: переключатель языка становится частью компактного блока действий */
 
-    .hero-lang-switch{display:flex; position: relative; left:auto; right:auto; top:auto; bottom:auto; z-index:auto}
+    .hero-lang-switch{display:flex; position: relative; left:auto; right:auto; top:auto; bottom:auto; z-index:auto; transform:translateY(8px)}
 
     .hero-lang-switch .lang-switch{gap:var(--lang-btn-gap)}
 
