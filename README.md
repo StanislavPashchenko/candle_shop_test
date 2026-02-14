@@ -52,7 +52,7 @@
       - `--search-padding-horiz` — горизонтальные отступы внутри поля поиска (по умолчанию `18px`).
       - `--search-border-radius` — радиус скругления поля поиска (по умолчанию `28px`).
       - `--search-font-size` — размер шрифта в поле поиска (по умолчанию `1rem`).
-
+ 
   4) Переключатель языков
       - `--hero-lang-switch-top`, `--hero-lang-switch-right`, `--hero-lang-switch-left`, `--hero-lang-switch-bottom`.
       - `--lang-btn-gap` — расстояние между кнопками переключения языков (RU / UA), по умолчанию `8px`.
