@@ -12,7 +12,7 @@
           fill="#234a5f"
           letter-spacing="1.6">
       <tspan>Good Karma</tspan>
-      <tspan dx="6" fill="#c28a50" letter-spacing="1.8">Light</tspan>
+      <tspan dx="4" fill="#c28a50" letter-spacing="1.8">Light</tspan>
     </text>
 
     <!-- Слово Light с тёплым оттенком и увеличенным отступом -->
