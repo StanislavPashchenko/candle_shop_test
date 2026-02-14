@@ -1941,6 +1941,10 @@ body{
 
         position: relative ;
 
+        flex-shrink:1;
+
+        min-width:0;
+
         left:auto;
 
         right:auto;
@@ -1952,6 +1956,8 @@ body{
         gap:0;
 
     }
+
+    .brand-link{min-width:0}
 
 
 
@@ -1981,7 +1987,7 @@ body{
 
 
 
-    .hero-logo{height:60px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:100%}
+    .hero-logo{height:60px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:45vw}
 
 
 
@@ -2087,7 +2093,7 @@ body{
 
     .hero-actions{gap:8px}
 
-    .hero-logo{height:52px}
+    .hero-logo{height:52px; max-width:42vw}
 
     .cart-link{padding:3px 6px; gap:3px}
 
