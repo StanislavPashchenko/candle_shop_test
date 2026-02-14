@@ -10,18 +10,8 @@
           font-family="'Playfair Display', 'Times New Roman', serif"
           font-size="30"
           fill="#234a5f"
-          letter-spacing="1.6">
-      Good Karma
-    </text>
-
-    <!-- Слово Light с тёплым оттенком -->
-    <text x="182" y="36"
-          font-family="'Playfair Display', 'Times New Roman', serif"
-          font-size="30"
-          fill="#c28a50"
-          letter-spacing="1.8">
-      Light
-    </text>
+          letter-spacing="0.4"
+          xml:space="preserve">Good Karma <tspan fill="#c28a50" letter-spacing="0.4">Light</tspan></text>
 
     <!-- Тонкий слоган снизу (можно удалить при желании) -->
     <text x="2" y="52"
