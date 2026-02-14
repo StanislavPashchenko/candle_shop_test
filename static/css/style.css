@@ -54,7 +54,7 @@
 
     --search-width-vw: 68vw; /* relative width — use vw to keep responsive */
 
-    --search-max-width: 660px; /* cap the search width */
+    --search-max-width: 460px; /* cap the search width */
 
     --search-height: 34px; /* height of search input */
 
@@ -96,7 +96,7 @@
 
      --header-search-top: 30px;
 
-     --header-search-right: -60px;
+     --header-search-right: -150px;
 
      --header-search-bottom: auto;
 
