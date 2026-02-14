@@ -15,7 +15,7 @@
     </text>
 
     <!-- Слово Light с тёплым оттенком -->
-    <text x="192" y="36"
+    <text x="182" y="36"
           font-family="'Playfair Display', 'Times New Roman', serif"
           font-size="30"
           fill="#c28a50"
