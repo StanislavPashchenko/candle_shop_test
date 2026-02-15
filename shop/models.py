@@ -2,15 +2,47 @@ from django.db import models
 from django.utils import translation
 
 
+class CategoryGroup(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name='Название группы (укр)')
+    name_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Название группы (рус)')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        verbose_name_plural = 'Группы категорий'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.display_name()
+
+    def display_name(self):
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('uk'):
+            return self.name or self.name_ru or ''
+        if lang.startswith('ru'):
+            return self.name_ru or self.name or ''
+        return self.name or self.name_ru or ''
+
+
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name='Название (укр)')
+    group = models.ForeignKey(
+        CategoryGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='categories',
+        verbose_name='Группа',
+    )
+    name = models.CharField(max_length=100, verbose_name='Название (укр)')
     name_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Название (рус)')
     description = models.TextField(blank=True, verbose_name='Описание')
     order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
 
     class Meta:
         verbose_name_plural = 'Категории'
-        ordering = ['order', 'name']
+        ordering = ['group__order', 'group__name', 'order', 'name']
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'name'], name='uniq_category_group_name_uk'),
+        ]
 
     def __str__(self):
         return self.display_name()

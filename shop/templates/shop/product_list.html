@@ -8,10 +8,10 @@
             <input type="search" name="q" placeholder="Поиск по названию, аромату..." value="{{ query }}">
         </div> -->
         <div class="field">
-            <select name="category">
-                <option value="">Все категории</option>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}" {% if request.GET.category|slugify == cat.id|slugify %}selected{% endif %}>{{ cat.name }}</option>
+            <select name="group">
+                <option value="">Все группы</option>
+                {% for grp in all_category_groups %}
+                <option value="{{ grp.id }}" {% if request.GET.group|slugify == grp.id|slugify %}selected{% endif %}>{{ grp.display_name }}</option>
                 {% endfor %}
             </select>
         </div>

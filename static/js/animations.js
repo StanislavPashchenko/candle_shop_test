@@ -22,6 +22,46 @@
     }
 })();
 
+// Desktop category groups dropdown
+(function(){
+    const groups = Array.from(document.querySelectorAll('.category-group'));
+    if(!groups.length) return;
+
+    function closeAll(){
+        groups.forEach(g => {
+            g.classList.remove('is-open');
+            const t = g.querySelector('.category-group__toggle');
+            if(t) t.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    groups.forEach(g => {
+        const toggle = g.querySelector('.category-group__toggle');
+        if(!toggle) return;
+        toggle.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            const isOpen = g.classList.contains('is-open');
+            closeAll();
+            if(!isOpen){
+                g.classList.add('is-open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+
+    document.addEventListener('click', function(e){
+        const inside = e.target.closest('.category-group');
+        if(inside) return;
+        closeAll();
+    });
+
+    document.addEventListener('keydown', function(e){
+        if(e.key !== 'Escape') return;
+        closeAll();
+    });
+})();
+
 // Desktop category scroller (arrows + fades)
 (function(){
     const root = document.querySelector('[data-category-scroll]');

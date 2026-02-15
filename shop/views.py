@@ -175,6 +175,14 @@ def product_list(request):
         except (ValueError, TypeError):
             pass
 
+    # group filter
+    group_id = request.GET.get('group')
+    if group_id:
+        try:
+            qs = qs.filter(category__group_id=int(group_id))
+        except (ValueError, TypeError):
+            pass
+
     # price range filters
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
@@ -203,7 +211,7 @@ def product_list(request):
     cart = request.session.get('cart', {})
     cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
     # categories for UI
-    categories = Category.objects.all().order_by('order', 'name')
+    categories = Category.objects.select_related('group').all().order_by('group__order', 'group__name', 'order', 'name')
 
     # Pagination: 20 items per page
     paginator = Paginator(qs, 20)

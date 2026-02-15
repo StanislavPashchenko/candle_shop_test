@@ -164,9 +164,23 @@
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'home' %}">Главная</a></li>
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">Все товары</a></li>
 
-            {% for cat in all_categories %}
+            {% for grp in all_category_groups %}
 
-            <li class="category-desktop-only"><a href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a></li>
+            <li class="category-desktop-only category-group">
+
+                <a href="#" class="category-group__toggle" aria-haspopup="true" aria-expanded="false">{{ grp.display_name }}</a>
+
+                <ul class="category-group__menu" aria-label="{{ grp.display_name }}">
+
+                    {% for cat in grp.categories.all %}
+
+                    <li><a href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a></li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </li>
 
             {% endfor %}
 
@@ -182,22 +196,21 @@
                         </div>
                         <div class="mobile-categories__body">
                             <a class="mobile-categories__link" href="{% url 'product_list' %}">Все товары</a>
-                            {% for cat in all_categories %}
+
+                            {% for grp in all_category_groups %}
+
+                            <div class="mobile-categories__group">{{ grp.display_name }}</div>
+
+                            {% for cat in grp.categories.all %}
+
                             <a class="mobile-categories__link" href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a>
+
+                            {% endfor %}
+
                             {% endfor %}
                         </div>
                     </div>
                 </div>
-            </li>
-
-            <li class="category-mobile-only">
-
-                <button type="button" class="search-toggle" data-action="toggle-search" aria-haspopup="dialog" aria-expanded="false" aria-label="Поиск">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2"/>
-                        <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
             </li>
 
         </ul>

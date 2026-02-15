@@ -1,17 +1,40 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Candle, Category, Collection, Order, OrderItem
+from .models import Candle, Category, CategoryGroup, Collection, Order, OrderItem
+
+
+class CategoryInline(admin.TabularInline):
+    model = Category
+    extra = 0
+    fields = ('name', 'name_ru', 'order')
+    ordering = ('order', 'name')
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('display_name', 'name_ru', 'order')
+    list_display = ('display_name', 'name_ru', 'group', 'order')
     search_fields = ('name', 'name_ru')
     fieldsets = (
-        (None, {'fields': ('name', 'name_ru', 'description', 'order')}),
+        (None, {'fields': ('group', 'name', 'name_ru', 'description', 'order')}),
     )
     def display_name(self, obj):
         return obj.display_name()
     display_name.short_description = _('Название')
+
+
+@admin.register(CategoryGroup)
+class CategoryGroupAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'name_ru', 'order')
+    search_fields = ('name', 'name_ru')
+    ordering = ('order', 'name')
+    fieldsets = (
+        (None, {'fields': ('name', 'name_ru', 'order')}),
+    )
+    inlines = [CategoryInline]
+
+    def display_name(self, obj):
+        return obj.display_name()
+
+    display_name.short_description = _('Название группы')
 
 
 @admin.register(Collection)

@@ -48,7 +48,6 @@
                     <img src="https://picsum.photos/seed/{{ candle.pk|default:0 }}/600/400" alt="{{ candle.name }}">
                 {% endif %}
                 <h3>{{ candle.display_name }}</h3>
-                <p>{{ candle.category.display_name }}</p>
                 <strong>{{ candle.price }} ₴</strong>
             </a>
             <button class="btn-buy btn-add" type="button" data-pk="{{ candle.pk }}">Купити</button>

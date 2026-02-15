@@ -164,9 +164,23 @@
 
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">{% trans "Все товары" %}</a></li>
 
-            {% for cat in all_categories %}
+            {% for grp in all_category_groups %}
 
-            <li class="category-desktop-only"><a href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a></li>
+            <li class="category-desktop-only category-group">
+
+                <a href="#" class="category-group__toggle" aria-haspopup="true" aria-expanded="false">{{ grp.display_name }}</a>
+
+                <ul class="category-group__menu" aria-label="{{ grp.display_name }}">
+
+                    {% for cat in grp.categories.all %}
+
+                    <li><a href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a></li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </li>
 
             {% endfor %}
 
@@ -184,9 +198,15 @@
 
                             <a class="mobile-categories__link" href="{% url 'product_list' %}">{% trans "Все товары" %}</a>
 
-                            {% for cat in all_categories %}
+                            {% for grp in all_category_groups %}
+
+                            <div class="mobile-categories__group">{{ grp.display_name }}</div>
+
+                            {% for cat in grp.categories.all %}
 
                             <a class="mobile-categories__link" href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a>
+
+                            {% endfor %}
 
                             {% endfor %}
 
