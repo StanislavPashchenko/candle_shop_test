@@ -1,154 +1,308 @@
 <!DOCTYPE html>
+
 {% load i18n %}
+
 <html lang="{{ LANGUAGE_CODE|default:'uk' }}">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Candle Store</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="/static/css/style.css?v=20260214-1">
+
 </head>
+
 <body>
+
 <div class="animated-bg" aria-hidden="true">
+
     <span class="blob b1"></span>
+
     <span class="blob b2"></span>
+
     <span class="blob b3"></span>
+
 </div>
+
+
 
 <div class="search-modal" data-search-modal aria-hidden="true">
+
     <div class="search-modal__backdrop" data-action="close-search"></div>
+
     <div class="search-modal__panel" role="dialog" aria-label="{% trans "Поиск" %}" tabindex="-1">
+
         <form class="search-modal__form" action="{% url 'product_list' %}" method="get">
+
             <input class="search-modal__input" type="text" name="q" placeholder="{% trans "Поиск..." %}" value="{{ request.GET.q }}" autocomplete="off">
+
             <button class="search-modal__submit" type="submit">{% trans "Найти" %}</button>
+
             <button class="search-modal__close" type="button" data-action="close-search" aria-label="{% trans "Закрыть" %}">×</button>
+
         </form>
+
     </div>
+
 </div>
+
 <!-- Top strip removed per request -->
 
+
+
 <!-- Hero header (large banner like the reference image) -->
+
 <header class="hero-header">
+
     <div class="hero-inner container">
+
         <div class="hero-langs">
+
             <a href="/" class="brand-link">
+
                 <picture>
+
                     <source media="(max-width:560px)" srcset="/static/images/logo-new.svg?v=20260214-7">
+
                     <img src="/static/images/logo-new.svg?v=20260214-7" alt="Good Karma Light" class="hero-logo">
+
                 </picture>
+
             </a>
+
         </div>
+
+
 
         <div class="hero-center">
+
             <h1 class="hero-title">Good Karma Light</h1>
+
             <form action="{% url 'product_list' %}" method="get" class="header-search">
+
                 <input type="text" name="q" placeholder="Що ви шукаєте?" value="{{ request.GET.q }}">
+
             </form>
+
         </div>
+
+
 
         <div class="hero-actions">
+
             <div class="hero-lang-switch">
+
                 <form action="{% url 'set_language' %}" method="post" class="lang-switch">
+
                     {% csrf_token %}
+
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
                     <button type="submit" name="language" value="uk" class="lang-btn">UK</button>
+
                     <button type="submit" name="language" value="ru" class="lang-btn">RU</button>
+
                 </form>
+
             </div>
+
+
 
             <div class="hero-cart">
+
                 <a href="/cart/" class="cart-link">
+
                     <img src="/static/images/cart_user.svg" alt="Корзина" class="cart-icon">
+
                     <span id="cart-count" class="cart-count-bubble">{{ cart_count|default:"0" }}</span>
+
                 </a>
+
             </div>
+
         </div>
+
     </div>
+
 </header>
 
+
+
 <!-- Main nav with catalog button, links and search -->
+
 <nav class="nav-bar">
+
     <div class="container nav-inner">
+
         <!-- Navigation links removed per request -->
+
     </div>
+
 </nav>
 
+
+
 <!-- Category bar (restored) -->
+
 <div class="category-bar">
+
     <div class="container">
+
         <ul class="category-top">
+
             <li class="category-mobile-only"><a href="{% url 'home' %}">{% trans "Главная" %}</a></li>
+
             <li class="category-mobile-only"><a href="{% url 'product_list' %}">{% trans "Все товары" %}</a></li>
+
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'home' %}">{% trans "Главная" %}</a></li>
+
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">{% trans "Все товары" %}</a></li>
+
             {% for cat in all_categories %}
+
             <li class="category-desktop-only"><a href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a></li>
+
             {% endfor %}
+
             <li class="category-mobile-only">
+
                 <button type="button" class="cat-toggle" data-action="toggle-categories" aria-haspopup="dialog" aria-expanded="false">{% trans "Категории" %}</button>
+
                 <div class="mobile-categories" data-mobile-categories aria-hidden="true">
+
                     <div class="mobile-categories__backdrop" data-action="close-categories"></div>
+
                     <div class="mobile-categories__panel" role="dialog" aria-label="{% trans "Категории" %}" tabindex="-1">
+
                         <div class="mobile-categories__body">
+
                             <a class="mobile-categories__link" href="{% url 'product_list' %}">{% trans "Все товары" %}</a>
+
                             {% for cat in all_categories %}
+
                             <a class="mobile-categories__link" href="{% url 'product_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a>
+
                             {% endfor %}
+
                         </div>
+
                     </div>
+
                 </div>
+
             </li>
+
         </ul>
+
     </div>
+
 </div>
+
+
 
 <!-- bottom-bar removed; language switcher and cart moved to top brand bar -->
 
+
+
 <main class="site-main">
+
     <div class="container">
+
         {% block content %}{% endblock %}
+
     </div>
+
 </main>
 
+
+
 <nav class="mobile-bottom-nav" aria-label="{% trans "Навигация" %}">
+
     <a class="mobile-bottom-nav__item" href="{% url 'home' %}">
+
         <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
             <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+
         </svg>
+
         <span class="mobile-bottom-nav__label">{% trans "Главная" %}</span>
+
     </a>
+
     <a class="mobile-bottom-nav__item" href="{% url 'product_list' %}">
+
         <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
             <path d="M8 6h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
             <path d="M3 6h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+
             <path d="M8 12h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
             <path d="M3 12h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+
             <path d="M8 18h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
             <path d="M3 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+
         </svg>
+
         <span class="mobile-bottom-nav__label">{% trans "Все товары" %}</span>
+
     </a>
+
     <button class="mobile-bottom-nav__item" type="button" data-action="mobile-bottom-categories">
+
         <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
             <path d="M4 5h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
             <path d="M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
             <path d="M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
         </svg>
+
         <span class="mobile-bottom-nav__label">{% trans "Категории" %}</span>
+
     </button>
+
     <button class="mobile-bottom-nav__item" type="button" data-action="toggle-search" aria-label="{% trans "Поиск" %}">
+
         <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
             <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2"/>
+
             <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
         </svg>
+
         <span class="mobile-bottom-nav__label">{% trans "Поиск" %}</span>
+
     </button>
+
 </nav>
 
+
+
 <footer class="site-footer">
+
     <p>© 2026 Cozy Candle</p>
+
 </footer>
 
+
+
 <script src="/static/js/animations.js"></script>
+
 </body>
+
 </html>
+
