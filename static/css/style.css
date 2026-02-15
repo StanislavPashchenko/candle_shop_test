@@ -2149,7 +2149,7 @@ body{
 
     @media (max-width:860px){
 
-        .hero-banner .slides{height:220px}
+        .hero-banner .slides{height:300px}
 
         .hero-banner .slide-caption{left:18px; bottom:18px}
 
@@ -2163,13 +2163,13 @@ body{
 
 
 
-/* Product image sizing: fixed-height tiles with cover to keep ratio */
+/* Product image sizing: vertical (Instagram-style) portrait ratio */
 
 .card img{
 
     width:100%; 
 
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 5;
 
     height:auto;
 
@@ -2581,7 +2581,7 @@ body{
 
 .hits-grid{display:grid; gap:18px; grid-template-columns: repeat(3, 1fr)}
 
-.hits-grid .card img{aspect-ratio: 16 / 9; height:auto; object-fit:cover; width: calc(100% + 24px); margin: -12px -12px 10px -12px; border-radius: 12px 12px 0 0}
+.hits-grid .card img{aspect-ratio: 4 / 5; height:auto; object-fit:cover; width: calc(100% + 24px); margin: -12px -12px 10px -12px; border-radius: 12px 12px 0 0}
 
 
 
@@ -2593,7 +2593,10 @@ body{
 
 @media (max-width:560px){
 
-    .hits-grid{grid-template-columns:1fr}
+    .hits-grid{grid-template-columns:repeat(2,1fr); gap:10px}
+
+    .hits-section .hits-grid .card .card-link{min-width:0; width:100%}
+    .hits-section .hits-grid .card img{aspect-ratio:auto; height:200px; width:100%; max-width:100%; min-width:0; margin:0 0 10px 0; object-fit:cover; display:block}
 
 }
 
@@ -2875,7 +2878,7 @@ body{
 
     .card img{
 
-        height: 150px;
+        aspect-ratio: 4 / 5;
 
     }
 
