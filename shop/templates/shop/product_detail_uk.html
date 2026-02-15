@@ -31,7 +31,7 @@
     <div class="meta">
         <h2>{{ candle.display_name }}</h2>
         <p class="aroma">Категорія: {{ candle.category.display_name }}</p>
-        <p class="desc">{{ candle.display_description }}</p>
+        <p class="desc">{{ candle.display_description|linebreaksbr }}</p>
         <div class="actions">
             <strong class="price">{{ candle.price }} ₴</strong>
             <button class="btn btn-add" data-pk="{{ candle.pk }}">Додати до кошика</button>
