@@ -35,7 +35,7 @@
     </div>
 
     <div class="hits-grid">
-        {% for candle in candles|slice:":6" %}
+        {% for candle in candles|slice:":4" %}
         <div class="card reveal">
             <div class="card-badges">
                 {% if candle.is_hit %}<span class="badge badge-hit">Хіт</span>{% endif %}

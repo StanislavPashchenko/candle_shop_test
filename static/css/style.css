@@ -2592,7 +2592,7 @@ body{
 
 .hits-section .tagline{color:#7a6a5b; font-size:0.95rem}
 
-.hits-grid{display:grid; gap:18px; grid-template-columns: repeat(3, 1fr)}
+.hits-grid{display:grid; gap:18px; grid-template-columns: repeat(4, 1fr)}
 
 .hits-grid .card img{aspect-ratio: 4 / 5; height:auto; object-fit:cover; width: calc(100% + 24px); margin: -12px -12px 10px -12px; border-radius: 12px 12px 0 0}
 
