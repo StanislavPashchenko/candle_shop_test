@@ -77,12 +77,6 @@
 
             <!-- <h1 class="hero-title">Good Karma Light</h1> -->
 
-            <form action="{% url 'product_list' %}" method="get" class="header-search">
-
-                <input type="text" name="q" placeholder="Що ви шукаєте?" value="{{ request.GET.q }}">
-
-            </form>
-
         </div>
 
 
@@ -175,6 +169,18 @@
             </li>
 
             {% endfor %}
+
+            <li class="category-desktop-only category-search">
+                <form action="{% url 'product_list' %}" method="get" class="category-search-form">
+                    <input type="text" name="q" placeholder="Що ви шукаєте?" value="{{ request.GET.q }}" class="category-search-input">
+                    <button type="submit" class="category-search-btn" aria-label="Пошук">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </form>
+            </li>
 
             <li class="category-mobile-only">
                 <button type="button" class="cat-toggle" data-action="toggle-categories" aria-haspopup="dialog" aria-expanded="false">Категорії</button>

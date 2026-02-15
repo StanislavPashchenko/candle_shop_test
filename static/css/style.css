@@ -1120,9 +1120,58 @@ body{
 
 
 
-.category-search{margin-left:auto}
+.category-search{margin-left:auto; display:flex; align-items:center}
 
-.category-search input{padding:6px 10px;border:1px solid #eee;border-radius:8px;min-width:140px;max-width:100px}
+.category-search-form{display:flex; align-items:center; position:relative}
+
+.category-search-input{
+    padding: 8px 14px 8px 16px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.98);
+    font-size: 0.9rem;
+    color: var(--muted);
+    outline: none;
+    width: 480px;
+    transition: all 200ms ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.category-search-input:focus{
+    border-color: rgba(106, 163, 214, 0.5);
+    box-shadow: 0 4px 14px rgba(106, 163, 214, 0.15);
+}
+
+.category-search-input::placeholder{color: #999}
+
+.category-search-btn{
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 200ms ease;
+}
+
+.category-search-btn:hover{
+    background: #5a8cc6;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.category-search-btn svg{
+    width: 14px;
+    height: 14px;
+}
 
 
 
