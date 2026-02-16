@@ -2792,6 +2792,28 @@ body{
 
 
 
+    .category-desktop-only{display:none !important}
+
+
+
+    /* Hide category groups and search on mobile - they are in bottom nav */
+
+    .category-group,
+
+    .category-group__menu,
+
+    .category-search{display:none !important}
+
+
+
+    .category-top .category-group,
+
+    .category-top .category-group__menu,
+
+    .category-top .category-search{display:none !important}
+
+
+
     /* Show category groups on mobile too */
 
     /* .category-desktop-only{display:none} */
