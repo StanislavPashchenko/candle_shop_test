@@ -41,10 +41,10 @@ class CollectionItemInline(admin.TabularInline):
     
     def get_extra(self, request, obj=None, **kwargs):
         """Уменьшаем extra если уже есть товары."""
-        if obj:
+        if obj and obj.pk:
             count = obj.items.count()
             return max(0, 5 - count)
-        return 5
+        return 0
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
