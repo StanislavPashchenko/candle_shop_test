@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home, product_list, product_detail, add_to_cart, cart_view, update_cart, checkout, get_nova_poshta_warehouses, privacy_policy
+from .views import home, product_list, product_detail, add_to_cart, cart_view, update_cart, checkout, get_nova_poshta_warehouses, privacy_policy, collection_detail
 
 urlpatterns = [
     path('', home, name='home'),
@@ -11,4 +11,5 @@ urlpatterns = [
     path('cart/update/', update_cart, name='cart_update'),
     path('checkout/', checkout, name='checkout'),
     path('api/nova-poshta-warehouses/', get_nova_poshta_warehouses, name='nova_poshta_warehouses'),
+    path('collection/<str:code>/', collection_detail, name='collection_detail'),
 ]

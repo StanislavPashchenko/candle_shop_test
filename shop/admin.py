@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Candle, Category, CategoryGroup, Collection, Order, OrderItem
+from django.forms import ModelForm
+from django.core.exceptions import ValidationError
+from .models import Candle, Category, CategoryGroup, Collection, CollectionItem, Order, OrderItem
 
 
 class CategoryInline(admin.TabularInline):
@@ -8,6 +10,41 @@ class CategoryInline(admin.TabularInline):
     extra = 0
     fields = ('name', 'name_ru', 'order')
     ordering = ('order', 'name')
+
+
+class CollectionItemInlineForm(ModelForm):
+    """Форма для товара в коллекции с валидацией максимума 5 штук."""
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        collection = cleaned_data.get('collection')
+        
+        # Проверяем количество товаров в коллекции при создании нового
+        if collection and not self.instance.pk:
+            current_count = collection.items.count()
+            if current_count >= 5:
+                raise ValidationError(
+                    f'В коллекции "{collection.display_name()}" уже максимальное количество товаров (5). '
+                    f'Удалите один товар, чтобы добавить новый.'
+                )
+        
+        return cleaned_data
+
+
+class CollectionItemInline(admin.TabularInline):
+    model = CollectionItem
+    form = CollectionItemInlineForm
+    extra = 0
+    fields = ('candle', 'order')
+    ordering = ('order', 'id')
+    max_num = 5
+    
+    def get_extra(self, request, obj=None, **kwargs):
+        """Уменьшаем extra если уже есть товары."""
+        if obj:
+            count = obj.items.count()
+            return max(0, 5 - count)
+        return 5
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -39,12 +76,13 @@ class CategoryGroupAdmin(admin.ModelAdmin):
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ('display_name', 'code', 'order')
+    list_display = ('display_name', 'code', 'order', 'items_count')
     search_fields = ('code', 'title_uk', 'title_ru')
     ordering = ('order', 'code')
+    inlines = [CollectionItemInline]
     fieldsets = (
         (None, {
-            'fields': ('code', 'title_uk', 'title_ru', 'description_uk', 'description_ru', 'order')
+            'fields': ('code', 'title_uk', 'title_ru', 'description_uk', 'description_ru', 'banner', 'order')
         }),
     )
 
@@ -52,6 +90,11 @@ class CollectionAdmin(admin.ModelAdmin):
         return obj.display_name()
 
     display_name.short_description = _('Название коллекции')
+    
+    def items_count(self, obj):
+        count = obj.items.count()
+        return f'{count}/5'
+    items_count.short_description = _('Товаров')
 
 @admin.register(Candle)
 class CandleAdmin(admin.ModelAdmin):

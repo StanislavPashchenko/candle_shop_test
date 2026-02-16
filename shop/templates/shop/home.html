@@ -61,6 +61,12 @@
         <p>{% trans "Выберите свечи под вечерний ритуал, подарок или уютный день дома." %}</p>
     </div>
     <div class="collections-grid">
+        {% for collection in collections %}
+        <a href="{% url 'collection_detail' collection.code %}" class="collection-card reveal">
+            <h3>{{ collection.display_name }}</h3>
+            <p>{{ collection.display_description|truncatewords:15 }}</p>
+        </a>
+        {% empty %}
         <a href="{% url 'product_list' %}" class="collection-card reveal">
             <h3>{% trans "Для релакса" %}</h3>
             <p>{% trans "Тёплые, мягкие ароматы для ванны, чтения и медитации." %}</p>
@@ -73,6 +79,7 @@
             <h3>{% trans "Для дома" %}</h3>
             <p>{% trans "Чистые ароматы, которые создают атмосферу без перегруза." %}</p>
         </a>
+        {% endfor %}
     </div>
 </section>
 

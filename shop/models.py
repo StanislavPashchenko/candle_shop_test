@@ -70,6 +70,7 @@ class Collection(models.Model):
     description_uk = models.TextField(blank=True, verbose_name='Опис (укр)')
     description_ru = models.TextField(blank=True, null=True, verbose_name='Описание (рус)')
     description = models.TextField(blank=True, verbose_name='Опис / Описание')
+    banner = models.ImageField(upload_to='collections/', blank=True, null=True, verbose_name='Баннер коллекции')
     order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
 
     class Meta:
@@ -95,6 +96,35 @@ class Collection(models.Model):
         if lang.startswith('ru'):
             return self.description_ru or self.description_uk or self.description or ''
         return self.description_uk or self.description_ru or self.description or ''
+
+
+class CollectionItem(models.Model):
+    """Товары в коллекции (до 5 штук с сортировкой)."""
+
+    collection = models.ForeignKey(
+        Collection,
+        on_delete=models.CASCADE,
+        related_name='items',
+        verbose_name='Коллекция'
+    )
+    candle = models.ForeignKey(
+        'Candle',
+        on_delete=models.CASCADE,
+        related_name='collection_items',
+        verbose_name='Свеча'
+    )
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        verbose_name = 'Товар в коллекции'
+        verbose_name_plural = 'Товары в коллекции'
+        ordering = ['order', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['collection', 'candle'], name='uniq_collection_candle'),
+        ]
+
+    def __str__(self):
+        return f'{self.collection.display_name()} — {self.candle.display_name()}'
 
 
 class Candle(models.Model):

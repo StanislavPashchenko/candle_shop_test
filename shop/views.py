@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import translation
-from .models import Candle, Collection
+from .models import Candle, Collection, CollectionItem
 from django.core.paginator import Paginator
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.db.models.functions import Lower
@@ -534,3 +534,30 @@ def privacy_policy(request):
     template = f'shop/privacy_{lang}.html'
     contact_email = ''
     return render(request, template, {'cart_count': cart_count, 'contact_email': contact_email})
+
+
+def collection_detail(request, code):
+    """Страница коллекции по настроению с до 5 товарами."""
+    from django.utils import translation
+    collection = get_object_or_404(Collection, code=code)
+    
+    # Получаем товары коллекции, отсортированные по order
+    items = (collection.items
+             .select_related('candle')
+             .order_by('order', 'id')[:5])
+    
+    cart = request.session.get('cart', {})
+    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+    
+    # Выбираем шаблон в зависимости от языка
+    lang = translation.get_language() or 'uk'
+    if lang.startswith('ru'):
+        template = 'shop/mood_collection_ru.html'
+    else:
+        template = 'shop/mood_collection_uk.html'
+    
+    return render(request, template, {
+        'collection': collection,
+        'items': items,
+        'cart_count': cart_count,
+    })
