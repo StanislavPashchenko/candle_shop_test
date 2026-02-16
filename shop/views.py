@@ -537,14 +537,14 @@ def privacy_policy(request):
 
 
 def collection_detail(request, code):
-    """Страница коллекции по настроению с до 5 товарами."""
+    """Страница коллекции по настроению с до 6 товарами."""
     from django.utils import translation
     collection = get_object_or_404(Collection, code=code)
     
     # Получаем товары коллекции, отсортированные по order
     items = (collection.items
              .select_related('candle')
-             .order_by('order', 'id')[:5])
+             .order_by('order', 'id')[:6])
     
     cart = request.session.get('cart', {})
     cart_count = sum(cart.values()) if isinstance(cart, dict) else 0

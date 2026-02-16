@@ -25,30 +25,43 @@
     <div id="products" class="mood-products">
         <div class="grid">
             {% for item in items %}
-            <a class="card reveal" href="{% url 'product_detail' item.candle.pk %}">
-                <div class="card-badges">
-                    {% if item.candle.is_hit %}<span class="badge badge-hit">Хит</span>{% endif %}
-                    {% if item.candle.is_on_sale and item.candle.discount_percent %}<span class="badge badge-sale">-{{ item.candle.discount_percent }}%</span>{% endif %}
-                </div>
-                {% if item.candle.image and item.candle.image.url %}
-                    <img src="{{ item.candle.image.url }}" alt="{{ item.candle.display_name }}">
-                {% else %}
-                    <img src="https://picsum.photos/seed/{{ item.candle.pk|default:0 }}/600/400" alt="{{ item.candle.display_name }}">
-                {% endif %}
-                <div class="card-content">
-                    <h3>{{ item.candle.display_name }}</h3>
-                    <p class="card-category">{{ item.candle.category.display_name }}</p>
-                    <div class="card-price-section">
-                        {% if item.candle.is_on_sale and item.candle.discount_percent %}
-                            <div class="price-original">{{ item.candle.price }} ₴</div>
-                            <div class="price-sale">{{ item.candle.discounted_price }} ₴</div>
-                        {% else %}
-                            <strong class="price-current">{{ item.candle.price }} ₴</strong>
-                        {% endif %}
+            <div class="lux-card reveal">
+                <div class="lux-media">
+                    <a class="lux-media__link" href="{% url 'product_detail' item.candle.pk %}" aria-label="{{ item.candle.display_name }}"></a>
+                    {% if item.candle.image and item.candle.image.url %}
+                        <img src="{{ item.candle.image.url }}" alt="{{ item.candle.display_name }}">
+                    {% else %}
+                        <img src="https://picsum.photos/seed/{{ item.candle.pk|default:0 }}/600/400" alt="{{ item.candle.display_name }}">
+                    {% endif %}
+                    <div class="lux-glow" aria-hidden="true"></div>
+                    <button class="lux-favorite" type="button" aria-label="Добавить в избранное">♡</button>
+                    <div class="lux-badges">
+                        {% if item.candle.is_hit %}<span class="badge badge-hit">Хит</span>{% endif %}
+                        {% if item.candle.is_on_sale and item.candle.discount_percent %}<span class="badge badge-sale">-{{ item.candle.discount_percent }}%</span>{% endif %}
                     </div>
-                    <button class="btn-buy btn-add" type="button" data-pk="{{ item.candle.pk }}">Купить</button>
                 </div>
-            </a>
+
+                <div class="lux-body">
+                    <div class="lux-category">{{ collection.display_name }}</div>
+                    <h3 class="lux-title">{{ item.candle.display_name }}</h3>
+                    <p class="lux-subtitle">{{ item.candle.display_description|truncatewords:10 }}</p>
+
+                    <div class="lux-footer">
+                        <div class="lux-price">
+                            {% if item.candle.is_on_sale and item.candle.discount_percent %}
+                                <span class="lux-price-old">{{ item.candle.price }} ₴</span>
+                                <span class="lux-price-new">{{ item.candle.discounted_price }} ₴</span>
+                            {% else %}
+                                <span class="lux-price-new">{{ item.candle.price }} ₴</span>
+                            {% endif %}
+                        </div>
+                        <button class="lux-btn btn-add" type="button" data-pk="{{ item.candle.pk }}">
+                            <span>Купить</span>
+                            <div class="lux-btn-bg" aria-hidden="true"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
             {% empty %}
             <div class="mood-empty">
                 <p>В этой коллекции пока нет товаров</p>
@@ -152,15 +165,175 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 16px;
-    max-width: 900px;
+    gap: 24px;
+    max-width: 1248px;
     margin: 0 auto;
     padding: 0 16px;
 }
 
-.mood-products .grid .card {
-    flex: 0 0 200px;
-    width: 200px;
+.mood-products .grid .lux-card {
+    width: 350px;
+}
+
+
+body.mood-collection-page .lux-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow:
+        0 18px 42px rgba(0,0,0,0.10),
+        inset 0 0 0 2px rgba(255,255,255,0.55);
+    transition: 0.6s cubic-bezier(.16,.8,.24,1);
+}
+
+body.mood-collection-page .lux-media {
+    position: relative;
+    overflow: hidden;
+}
+
+body.mood-collection-page .lux-media__link{
+    position:absolute;
+    inset:0;
+    z-index:1;
+}
+
+body.mood-collection-page .lux-media img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    height: auto;
+    object-fit: cover;
+    display:block;
+    transition: transform 0.8s cubic-bezier(.16,.8,.24,1);
+}
+
+body.mood-collection-page .lux-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(255, 210, 150, 0.35), transparent 60%);
+    opacity: 0;
+    transition: 0.6s ease;
+    z-index:2;
+    pointer-events:none;
+}
+
+body.mood-collection-page .lux-badges{position:absolute; left:18px; top:18px; display:flex; gap:8px; z-index:4}
+
+body.mood-collection-page .lux-favorite {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.9);
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s ease;
+    z-index:4;
+}
+
+@media (hover:hover) and (pointer:fine) {
+    body.mood-collection-page .lux-favorite:hover {
+        transform: scale(1.1);
+    }
+}
+
+body.mood-collection-page .lux-body {
+    padding: 26px;
+}
+
+body.mood-collection-page .lux-category {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 10px;
+}
+
+body.mood-collection-page .lux-title {
+    font-size: 24px;
+    margin: 0 0 6px;
+}
+
+body.mood-collection-page .lux-subtitle {
+    font-size: 14px;
+    color: #777;
+    margin: 0 0 20px;
+    flex-grow: 1;
+}
+
+body.mood-collection-page .lux-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+body.mood-collection-page .lux-price {
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+body.mood-collection-page .lux-price-old{
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #777;
+    text-decoration: line-through;
+}
+
+body.mood-collection-page .lux-price-new{font-weight:700}
+
+body.mood-collection-page .lux-btn {
+    position: relative;
+    padding: 12px 28px;
+    border-radius: 40px;
+    overflow: hidden;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    border:0;
+    background: transparent;
+    cursor:pointer;
+}
+
+body.mood-collection-page .lux-btn span{position:relative; z-index:1}
+
+body.mood-collection-page .lux-btn-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #d4a373, #b5835a);
+    transition: 0.5s ease;
+    z-index: 0;
+}
+
+@media (hover:hover) and (pointer:fine) {
+    body.mood-collection-page .lux-btn:hover .lux-btn-bg {
+        transform: scale(1.15);
+    }
+}
+
+@media (hover:hover) and (pointer:fine) {
+    body.mood-collection-page .lux-card:hover {
+        transform: translateY(-10px);
+        box-shadow:
+            0 34px 70px rgba(0,0,0,0.18),
+            inset 0 0 0 2px rgba(255,255,255,0.75);
+    }
+
+    body.mood-collection-page .lux-card:hover .lux-media img {
+        transform: scale(1.08);
+    }
+
+    body.mood-collection-page .lux-card:hover .lux-glow {
+        opacity: 1;
+    }
 }
 
 /* Empty State */
@@ -248,12 +421,71 @@
         gap: 12px;
     }
     
-    .mood-products .grid .card {
+    .mood-products .grid .lux-card {
         flex: 0 0 calc(50% - 6px);
         max-width: calc(50% - 6px);
         width: auto;
     }
+
+    body.mood-collection-page .lux-media img {height: 260px}
+
+    body.mood-collection-page .lux-body {padding: 18px}
 }
+
+@media (max-width: 768px) {
+    .mood-products .grid .lux-card {
+        width: calc(50% - 12px);
+        min-width: 160px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    body.mood-collection-page .lux-media img {
+        aspect-ratio: 4 / 5;
+    }
+    
+    body.mood-collection-page .lux-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    
+    body.mood-collection-page .lux-title {
+        font-size: 16px;
+    }
+    
+    body.mood-collection-page .lux-subtitle {
+        font-size: 11px;
+        margin-bottom: 12px;
+    }
+    
+    body.mood-collection-page .lux-footer {
+        flex-direction: row;
+        gap: 6px;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+    }
+    
+    body.mood-collection-page .lux-price {
+        font-size: 13px;
+        justify-content: flex-start;
+        gap: 6px;
+    }
+    
+    body.mood-collection-page .lux-price-old {
+        font-size: 11px;
+    }
+    
+    body.mood-collection-page .lux-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        width: auto;
+        white-space: nowrap;
+    }
+}
+
 </style>
 
 <script>

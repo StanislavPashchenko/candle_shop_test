@@ -23,9 +23,9 @@ class CollectionItemInlineForm(ModelForm):
         # Только для уже сохранённых коллекций (при создании коллекции проверка отключается)
         if collection and collection.pk and not self.instance.pk:
             current_count = collection.items.count()
-            if current_count >= 5:
+            if current_count >= 6:
                 raise ValidationError(
-                    f'В коллекции "{collection.display_name()}" уже максимальное количество товаров (5). '
+                    f'В коллекции "{collection.display_name()}" уже максимальное количество товаров (6). '
                     f'Удалите один товар, чтобы добавить новый.'
                 )
         
@@ -38,13 +38,13 @@ class CollectionItemInline(admin.TabularInline):
     extra = 0
     fields = ('candle', 'order')
     ordering = ('order', 'id')
-    max_num = 5
+    max_num = 6
     
     def get_extra(self, request, obj=None, **kwargs):
         """Уменьшаем extra если уже есть товары."""
         if obj and obj.pk:
             count = obj.items.count()
-            return max(0, 5 - count)
+            return max(0, 6 - count)
         return 0
 
 @admin.register(Category)
@@ -94,7 +94,7 @@ class CollectionAdmin(admin.ModelAdmin):
     
     def items_count(self, obj):
         count = obj.items.count()
-        return f'{count}/5'
+        return f'{count}/6'
     items_count.short_description = _('Товаров')
 
 @admin.register(Candle)
