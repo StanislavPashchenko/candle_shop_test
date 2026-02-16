@@ -17,10 +17,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="/static/css/style.css?v=20260216-1">
-<style>.product-gallery,.product-gallery__main{border-radius:16px !important;overflow:hidden !important}.product-gallery__img,.product-gallery__main img{border-radius:16px !important}.gallery-thumb img{border-radius:12px !important}</style>
-</head>
 
-<body>
+    <style>
+        .product-gallery { border-radius: 16px !important; overflow: hidden !important; }
+        .product-gallery__main { border-radius: 16px !important; overflow: hidden !important; }
+        .product-gallery__img,
+        .product-gallery__main img { border-radius: 16px !important; }
+        .gallery-thumb img { border-radius: 12px !important; }
+    </style>
+
+</head> 
+
+<body class="{% block body_class %}{% endblock %}">
 
 <div class="animated-bg" aria-hidden="true">
 
@@ -105,7 +113,7 @@
 
                 <a href="/cart/" class="cart-link">
 
-                    <img src="/static/images/cart_user.svg" alt="Корзина" class="cart-icon">
+                    <img src="/static/images/cart_user.svg" alt="Кошик" class="cart-icon">
 
                     <span id="cart-count" class="cart-count-bubble">{{ cart_count|default:"0" }}</span>
 
@@ -127,7 +135,7 @@
 
     <div class="container nav-inner">
 
-            <!-- Navigation links removed per request -->
+        <!-- Navigation links removed per request -->
 
     </div>
 
@@ -145,10 +153,10 @@
 
             <li class="category-mobile-only"><a href="{% url 'home' %}">Головна</a></li>
 
-            <li class="category-mobile-only"><a href="{% url 'product_list' %}">Всi товари</a></li>
+            <li class="category-mobile-only"><a href="{% url 'product_list' %}">Всі товари</a></li>
 
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'home' %}">Головна</a></li>
-            <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">Всi товари</a></li>
+            <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">Всі товари</a></li>
 
             {% for grp in all_category_groups %}
 
@@ -193,7 +201,7 @@
                             <!-- <button type="button" class="mobile-categories__close" data-action="close-categories" aria-label="Закрити">×</button> -->
                         </div>
                         <div class="mobile-categories__body">
-                            <a class="mobile-categories__link" href="{% url 'product_list' %}">Всi товари</a>
+                            <a class="mobile-categories__link" href="{% url 'product_list' %}">Всі товари</a>
 
                             {% for grp in all_category_groups %}
 
@@ -218,6 +226,8 @@
 </div>
 
 
+
+<!-- bottom-bar removed; language switcher and cart moved to top brand bar -->
 
 <main class="site-main">
 
@@ -244,7 +254,7 @@
             <path d="M8 18h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <path d="M3 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         </svg>
-        <span class="mobile-bottom-nav__label">Всi товари</span>
+        <span class="mobile-bottom-nav__label">Всі товари</span>
     </a>
     <button class="mobile-bottom-nav__item" type="button" data-action="mobile-bottom-categories">
         <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

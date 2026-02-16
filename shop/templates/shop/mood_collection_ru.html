@@ -188,6 +188,16 @@ body.mood-collection-page .lux-card {
     transition: 0.6s cubic-bezier(.16,.8,.24,1);
 }
 
+@media (max-width: 768px) {
+    body.mood-collection-page .lux-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-radius: 20px;
+        transition: none;
+    }
+}
+
 body.mood-collection-page .lux-media {
     position: relative;
     overflow: hidden;
@@ -208,14 +218,17 @@ body.mood-collection-page .lux-media img {
     transition: transform 0.8s cubic-bezier(.16,.8,.24,1);
 }
 
-body.mood-collection-page .lux-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 30%, rgba(255, 210, 150, 0.35), transparent 60%);
-    opacity: 0;
-    transition: 0.6s ease;
-    z-index:2;
-    pointer-events:none;
+@media (max-width: 768px) {
+    body.mood-collection-page .lux-media img {
+        aspect-ratio: 4 / 5;
+        transition: none;
+    }
+}
+
+@media (max-width: 768px) {
+    body.mood-collection-page .lux-glow {
+        display: none;
+    }
 }
 
 body.mood-collection-page .lux-badges{position:absolute; left:18px; top:18px; display:flex; gap:8px; z-index:4}
@@ -233,6 +246,17 @@ body.mood-collection-page .lux-favorite {
     font-size: 18px;
     transition: 0.3s ease;
     z-index:4;
+}
+
+@media (max-width: 768px) {
+    body.mood-collection-page .lux-favorite {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        top: 12px;
+        right: 12px;
+        transition: none;
+    }
 }
 
 @media (hover:hover) and (pointer:fine) {
@@ -311,6 +335,20 @@ body.mood-collection-page .lux-btn-bg {
     background: linear-gradient(135deg, #d4a373, #b5835a);
     transition: 0.5s ease;
     z-index: 0;
+}
+
+@media (max-width: 768px) {
+    body.mood-collection-page .lux-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        width: auto;
+        white-space: nowrap;
+        border-radius: 20px;
+    }
+    
+    body.mood-collection-page .lux-btn-bg {
+        transition: none;
+    }
 }
 
 @media (hover:hover) and (pointer:fine) {
@@ -477,13 +515,6 @@ body.mood-collection-page .lux-btn-bg {
     
     body.mood-collection-page .lux-price-old {
         font-size: 11px;
-    }
-    
-    body.mood-collection-page .lux-btn {
-        padding: 6px 12px;
-        font-size: 12px;
-        width: auto;
-        white-space: nowrap;
     }
 }
 
