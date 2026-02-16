@@ -20,7 +20,8 @@ class CollectionItemInlineForm(ModelForm):
         collection = cleaned_data.get('collection')
         
         # Проверяем количество товаров в коллекции при создании нового
-        if collection and not self.instance.pk:
+        # Только для уже сохранённых коллекций (при создании коллекции проверка отключается)
+        if collection and collection.pk and not self.instance.pk:
             current_count = collection.items.count()
             if current_count >= 5:
                 raise ValidationError(
