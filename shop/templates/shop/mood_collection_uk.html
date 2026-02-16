@@ -2,6 +2,23 @@
 {% load i18n static %}
 
 {% block content %}
+
+<!-- Mobile Navigation Buttons -->
+<nav class="mood-mobile-nav" aria-label="Мобільна навігація">
+    <a class="mood-mobile-nav__item" href="{% url 'home' %}">
+        <span>Головна</span>
+    </a>
+    <a class="mood-mobile-nav__item" href="{% url 'product_list' %}">
+        <span>Всi товари</span>
+    </a>
+    <button class="mood-mobile-nav__item" type="button" data-action="mobile-bottom-categories">
+        <span>Категорії</span>
+    </button>
+    <button class="mood-mobile-nav__item" type="button" data-action="toggle-search" aria-label="Пошук">
+        <span>Пошук</span>
+    </button>
+</nav>
+
 <section class="mood-collection">
 
     <!-- Hero Banner -->
@@ -67,7 +84,58 @@
 </section>
 
 <style>
-/* Mood Collection - Clean & Transparent */
+/* Hide bottom mobile nav on mood collection pages */
+.mobile-bottom-nav {
+    display: none !important;
+}
+
+/* Mobile Navigation Buttons under header - как на скрине */
+.mood-mobile-nav {
+    display: none;
+    flex-wrap: nowrap;
+    gap: 0;
+    justify-content: center;
+    padding: 0;
+    margin: 12px 16px 20px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 28px;
+    overflow: hidden;
+}
+
+.mood-mobile-nav__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+    background: #fff;
+    border: none;
+    border-right: 1px solid #d1d5db;
+    border-radius: 0;
+    color: #4b5563;
+    font-size: 14px;
+    font-weight: 400;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 0;
+}
+
+.mood-mobile-nav__item:last-child {
+    border-right: none;
+}
+
+.mood-mobile-nav__item:hover {
+    background: #f9fafb;
+    color: #1f2937;
+}
+
+@media (max-width: 768px) {
+    .mood-mobile-nav {
+        display: flex;
+    }
+}
 .mood-collection {
     padding: 0;
     margin: 0;

@@ -1,7 +1,10 @@
 {% extends 'shop/base_ru.html' %}
 {% load static %}
 
+{% block body_class %}mood-collection-page{% endblock %}
+
 {% block content %}
+
 <section class="mood-collection">
 
     <!-- Hero Banner -->
@@ -67,7 +70,12 @@
 </section>
 
 <style>
-/* Mood Collection - Clean & Transparent */
+@media (max-width: 920px) {
+    body.mood-collection-page .nav-bar,
+    body.mood-collection-page .category-bar{
+        display:none;
+    }
+}
 .mood-collection {
     padding: 0;
     margin: 0;

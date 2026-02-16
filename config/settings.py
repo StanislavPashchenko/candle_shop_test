@@ -44,6 +44,7 @@ ALLOWED_HOSTS = [
     'candleshoptest.pythonanywhere.com',
     '127.0.0.1',
     'localhost',
+    'trepidly-synoetic-francisco.ngrok-free.dev'
 ]
 
 
