@@ -13,9 +13,12 @@ __pycache__/
 
 # Django
 staticfiles/
-media/
 db.sqlite3
 db.sqlite3-journal
+*.sqlite3
+
+# MEDIA — хранятся на PythonAnywhere
+media/
 
 # IDE
 .vscode/
