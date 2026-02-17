@@ -19,7 +19,7 @@ db.sqlite3-journal
 
 # MEDIA — ВАЖНО
 # ❗ УБЕРИ ЭТУ СТРОКУ ЕСЛИ ХОЧЕШЬ ХРАНИТЬ КАРТИНКИ В GIT
-# media/
+
 
 # IDE
 .vscode/
