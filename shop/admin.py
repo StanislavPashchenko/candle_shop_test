@@ -2,7 +2,24 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
-from .models import Candle, Category, CategoryGroup, Collection, CollectionItem, Order, OrderItem
+from .models import (
+    Candle,
+    Category,
+    CategoryGroup,
+    CandleCategory,
+    Collection,
+    CollectionItem,
+    Order,
+    OrderItem,
+)
+
+
+
+class CandleCategoryInline(admin.TabularInline):
+    model = CandleCategory
+    extra = 1
+    fields = ('category', 'order')
+    ordering = ('order',)
 
 
 class CategoryInline(admin.TabularInline):
@@ -99,23 +116,47 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(Candle)
 class CandleAdmin(admin.ModelAdmin):
-    list_display = ('display_name', 'price', 'category', 'collection', 'order', 'is_hit', 'is_on_sale', 'discount_percent')
-    #list_editable = ('price', 'category', 'order', 'is_hit', 'is_on_sale', 'discount_percent')
-    list_filter = ('is_hit', 'is_on_sale', 'category', 'collection')
-    search_fields = ('name', 'name_ru', 'category__name')
+    list_display = ('display_name', 'price', 'order')
+    inlines = [CandleCategoryInline]
+
+    list_filter = (
+        'collection',
+        'is_hit',
+        'is_on_sale',
+    )
+
+    search_fields = (
+        'name',
+        'name_ru',
+        'categories__name',
+        'categories__name_ru',
+    )
+
     ordering = ('order', '-id')
+
     fieldsets = (
         (None, {
             'fields': ('name', 'name_ru', 'description', 'description_ru')
         }),
         ('Catalog', {
-            'fields': ('price', 'image', 'image2', 'image3', 'category', 'collection', 'order', 'is_hit', 'is_on_sale', 'discount_percent')
+            'fields': (
+                'price',
+                'image',
+                'image2',
+                'image3',
+                'collection',
+                'order',
+                'is_hit',
+                'is_on_sale',
+                'discount_percent',
+            )
         }),
     )
+
     def display_name(self, obj):
         return obj.display_name()
-    display_name.short_description = _('Название')
 
+    display_name.short_description = _('Название')
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem

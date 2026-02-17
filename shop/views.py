@@ -135,13 +135,17 @@ def product_list(request):
     
     # Создаем базовый queryset с кастомной сортировкой
     # Приоритет: хит+скидка -> скидка -> хит -> остальные -> по дате добавления
-    qs = Candle.objects.all().annotate(
-        sort_priority=Case(
-            When(is_hit=True, is_on_sale=True, then=Value(0)),
-            When(is_hit=False, is_on_sale=True, then=Value(1)),
-            When(is_hit=True, is_on_sale=False, then=Value(2)),
-            default=Value(3),
-            output_field=IntegerField(),
+    qs = (
+        Candle.objects
+        .prefetch_related('categories', 'categories__group')
+        .annotate(
+            sort_priority=Case(
+                When(is_hit=True, is_on_sale=True, then=Value(0)),
+                When(is_hit=False, is_on_sale=True, then=Value(1)),
+                When(is_hit=True, is_on_sale=False, then=Value(2)),
+                default=Value(3),
+                output_field=IntegerField(),
+            )
         )
     )
     
@@ -160,18 +164,18 @@ def product_list(request):
         q_cap = q.capitalize()
         qs = qs.filter(
             Q(name__icontains=q) | Q(name_ru__icontains=q)
-            | Q(category__name__icontains=q) | Q(category__name_ru__icontains=q)
+            | Q(categories__name__icontains=q) | Q(categories__name_ru__icontains=q)
             | Q(description__icontains=q) | Q(description_ru__icontains=q)
             | Q(name__contains=q_cap) | Q(name_ru__contains=q_cap)
-            | Q(category__name__contains=q_cap) | Q(category__name_ru__contains=q_cap)
+            | Q(categories__name__contains=q_cap) | Q(categories__name_ru__contains=q_cap)
             | Q(description__contains=q_cap) | Q(description_ru__contains=q_cap)
-        )
+        ).distinct()
 
     # category filter
     category_id = request.GET.get('category')
     if category_id:
         try:
-            qs = qs.filter(category_id=int(category_id))
+            qs = qs.filter(categories__id=int(category_id)).distinct()
         except (ValueError, TypeError):
             pass
 
@@ -179,7 +183,7 @@ def product_list(request):
     group_id = request.GET.get('group')
     if group_id:
         try:
-            qs = qs.filter(category__group_id=int(group_id))
+            qs = qs.filter(categories__group_id=int(group_id)).distinct()
         except (ValueError, TypeError):
             pass
 

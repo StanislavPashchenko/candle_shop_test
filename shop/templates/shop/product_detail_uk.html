@@ -62,7 +62,17 @@
 
         <h2>{{ candle.display_name }}</h2>
 
-        <p class="aroma">Категорія: {{ candle.category.display_name }}</p>
+            {% if candle.category_links.exists %}
+                <p class="aroma">
+                    Категории:
+                    {% for link in candle.category_links.all %}
+                        <span class="category-chip">
+                            {{ link.category.display_name }}
+                        </span>
+                    {% endfor %}
+                </p>
+            {% endif %}
+
 
         <p class="desc">{{ candle.display_description|linebreaksbr }}</p>
 

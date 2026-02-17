@@ -21,8 +21,7 @@ class CategoryGroup(models.Model):
         if lang.startswith('ru'):
             return self.name_ru or self.name or ''
         return self.name or self.name_ru or ''
-
-
+    
 class Category(models.Model):
     group = models.ForeignKey(
         CategoryGroup,
@@ -54,6 +53,24 @@ class Category(models.Model):
         if lang.startswith('ru'):
             return self.name_ru or self.name or ''
         return self.name or self.name_ru or ''
+
+class CandleCategory(models.Model):
+    candle = models.ForeignKey(
+        'Candle',
+        on_delete=models.CASCADE,
+        related_name='category_links'
+    )
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.CASCADE,
+        related_name='candle_links'
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ('candle', 'category')
+
 
 
 class Collection(models.Model):
@@ -133,21 +150,32 @@ class Candle(models.Model):
     description = models.TextField(verbose_name='Описание (укр)')
     description_ru = models.TextField(blank=True, null=True, verbose_name='Описание (рус)')
     price = models.DecimalField(max_digits=8, decimal_places=2)
+
     image = models.ImageField(upload_to='candles/')
-    image2 = models.ImageField(upload_to='candles/', blank=True, null=True, verbose_name='Фото 2')
-    image3 = models.ImageField(upload_to='candles/', blank=True, null=True, verbose_name='Фото 3')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Категория')
-    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
-    is_hit = models.BooleanField(default=False, verbose_name='Хит продаж')
-    is_on_sale = models.BooleanField(default=False, verbose_name='В продаже со скидкой')
-    discount_percent = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Скидка (%)')
+    image2 = models.ImageField(upload_to='candles/', blank=True, null=True)
+    image3 = models.ImageField(upload_to='candles/', blank=True, null=True)
+
+
+    categories = models.ManyToManyField(
+        Category,
+        through='CandleCategory',
+        related_name='candles',
+        verbose_name='Категории',
+        blank=True
+    )
+    
+
+    order = models.PositiveIntegerField(default=0)
+    is_hit = models.BooleanField(default=False)
+    is_on_sale = models.BooleanField(default=False)
+    discount_percent = models.PositiveSmallIntegerField(null=True, blank=True)
+
     collection = models.ForeignKey(
         Collection,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name='Коллекция по настроению',
-        help_text='Свеча будет относиться к выбранной коллекции по настроению.',
     )
 
     def discounted_price(self):
