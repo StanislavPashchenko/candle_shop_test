@@ -315,8 +315,8 @@ def cart_view(request):
             c = Candle.objects.get(pk=int(pk_str))
         except Candle.DoesNotExist:
             continue
-        items.append({'candle': c, 'qty': qty, 'subtotal': c.price * qty})
-        total += c.price * qty
+        items.append({'candle': c, 'qty': qty, 'subtotal': c.discounted_price() * qty})
+        total += c.discounted_price() * qty
     cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/cart_{lang}.html'
@@ -363,14 +363,14 @@ def update_cart(request):
     for k, v in cart.items():
         try:
             c = Candle.objects.get(pk=int(k))
-            total += c.price * v
+            total += c.discounted_price() * v
         except Candle.DoesNotExist:
             continue
 
     if item_qty:
         try:
             c = Candle.objects.get(pk=int(pk))
-            item_subtotal = str(c.price * item_qty)
+            item_subtotal = str(c.discounted_price() * item_qty)
         except Candle.DoesNotExist:
             item_subtotal = '0'
 
@@ -390,8 +390,8 @@ def checkout(request):
     for pk_str, qty in (cart.items() if isinstance(cart, dict) else []):
         try:
             c = Candle.objects.get(pk=int(pk_str))
-            items.append({'candle': c, 'qty': qty, 'subtotal': c.price * qty})
-            total += c.price * qty
+            items.append({'candle': c, 'qty': qty, 'subtotal': c.discounted_price() * qty})
+            total += c.discounted_price() * qty
         except Candle.DoesNotExist:
             continue
     
@@ -434,7 +434,7 @@ def checkout(request):
                     order=order,
                     candle=item['candle'],
                     quantity=item['qty'],
-                    price=item['candle'].price
+                    price=item['candle'].discounted_price()
                 )
             
             # Очищаем корзину
@@ -480,11 +480,16 @@ def get_nova_poshta_warehouses(request):
     if not city:
         return JsonResponse({'warehouses': []})
 
+    api_key = getattr(settings, 'NOVA_POSHTA_API_KEY', '')
+    if not api_key:
+        logger.warning('Nova Poshta API key not configured')
+        return JsonResponse({'warehouses': []})
+
     try:
         # API Новой Почты
         url = 'https://api.novaposhta.ua/v2.0/json/'
         payload = {
-            'apiKey': 'your_api_key_here',  # Неходится API ключ на сайте Новой Почты
+            'apiKey': api_key,
             'modelName': 'AddressGeneral',
             'calledMethod': 'searchSettlements',
             'methodProperties': {
@@ -504,7 +509,7 @@ def get_nova_poshta_warehouses(request):
                 settlement_ref = settlements[0]['DeliveryCity']
                 
                 payload2 = {
-                    'apiKey': 'your_api_key_here',
+                    'apiKey': api_key,
                     'modelName': 'AddressGeneral',
                     'calledMethod': 'getWarehouses',
                     'methodProperties': {
@@ -526,7 +531,7 @@ def get_nova_poshta_warehouses(request):
                     ]
                     return JsonResponse({'warehouses': warehouses})
     except Exception as e:
-        print(f'Error: {e}')
+        logger.error(f'Nova Poshta API error: {e}')
     
     return JsonResponse({'warehouses': []})
 

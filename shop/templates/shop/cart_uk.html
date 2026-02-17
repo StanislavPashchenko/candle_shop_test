@@ -15,7 +15,14 @@
             {% endif %}
             <div class="cart-info">
                 <a href="{% url 'product_detail' it.candle.pk %}"><strong>{{ it.candle.display_name }}</strong></a>
-                <p>Категорія: {{ it.candle.category.display_name }}</p>
+                <p>Категорії: 
+                    {% if it.candle.category_links.exists %}
+                        {% for link in it.candle.category_links.all|slice:":2" %}
+                            {{ link.category.display_name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}-
+                    {% endif %}
+                </p>
                 <div class="qty-controls">
                     <button class="qty-btn cart-decrease" data-pk="{{ it.candle.pk }}">−</button>
                     <span id="qty-{{ it.candle.pk }}">{{ it.qty }}</span>

@@ -51,7 +51,7 @@ class OrderForm(forms.ModelForm):
             }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Нотатки (опціонально)',
+                'placeholder': 'Нотатки (опціонально)' if (translation.get_language() or 'uk')[:2] == 'uk' else 'Примечания (опционально)',
                 'rows': 3
             }),
             'agree_to_terms': forms.CheckboxInput(attrs={

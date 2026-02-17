@@ -112,10 +112,16 @@ class CollectionAdmin(admin.ModelAdmin):
         return f'{count}/6'
     items_count.short_description = _('Товаров')
 
+class CandleImageInline(admin.TabularInline):
+    model = CandleImage
+    extra = 0
+    fields = ('image', 'order')
+
+
 @admin.register(Candle)
 class CandleAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'price', 'order')
-    inlines = [CandleCategoryInline]
+    inlines = [CandleCategoryInline, CandleImageInline]
 
     list_filter = (
         'is_hit',
