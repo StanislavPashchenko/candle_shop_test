@@ -7,6 +7,7 @@ from .models import (
     Category,
     CategoryGroup,
     CandleCategory,
+    CandleImage,
     Collection,
     CollectionItem,
     Order,
