@@ -17,8 +17,14 @@ db.sqlite3
 db.sqlite3-journal
 *.sqlite3
 
+<<<<<<< HEAD
 # MEDIA — хранятся на PythonAnywhere
 media/
+=======
+# MEDIA — ВАЖНО
+# ❗ УБЕРИ ЭТУ СТРОКУ ЕСЛИ ХОЧЕШЬ ХРАНИТЬ КАРТИНКИ В GIT
+
+>>>>>>> d421ff22341326be403fcb3591dcbf35242bccba
 
 # IDE
 .vscode/
