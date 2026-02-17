@@ -13,8 +13,6 @@ from .models import (
     OrderItem,
 )
 
-
-
 class CandleCategoryInline(admin.TabularInline):
     model = CandleCategory
     extra = 1
