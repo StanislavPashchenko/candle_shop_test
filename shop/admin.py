@@ -118,7 +118,6 @@ class CandleAdmin(admin.ModelAdmin):
     inlines = [CandleCategoryInline]
 
     list_filter = (
-        'collection',
         'is_hit',
         'is_on_sale',
     )
@@ -142,7 +141,6 @@ class CandleAdmin(admin.ModelAdmin):
                 'image',
                 'image2',
                 'image3',
-                'collection',
                 'order',
                 'is_hit',
                 'is_on_sale',
