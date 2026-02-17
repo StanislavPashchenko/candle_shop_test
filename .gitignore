@@ -13,10 +13,13 @@ __pycache__/
 
 # Django
 staticfiles/
-media/
 db.sqlite3
-*.sqlite3
 db.sqlite3-journal
+*.sqlite3
+
+# MEDIA — ВАЖНО
+# ❗ УБЕРИ ЭТУ СТРОКУ ЕСЛИ ХОЧЕШЬ ХРАНИТЬ КАРТИНКИ В GIT
+# media/
 
 # IDE
 .vscode/
