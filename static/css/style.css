@@ -6964,3 +6964,212 @@ body.image-modal-open .category-bar{z-index:0}
         margin-top: 0;
     }
 }
+
+/* ========== КОНФИГУРАТОР ТОВАРОВ ========== */
+
+.product-options {
+    margin: 16px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.option-group {
+    margin-bottom: 20px;
+}
+
+.option-group:last-child {
+    margin-bottom: 0;
+}
+
+.option-group-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.option-item {
+    margin-bottom: 12px;
+}
+
+.option-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.required-mark {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+/* Select */
+.option-select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: white;
+    color: #1e293b;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.option-select:focus {
+    outline: none;
+    border-color: #6aa3d6;
+    box-shadow: 0 0 0 3px rgba(106, 163, 214, 0.15);
+}
+
+/* Radio group */
+.option-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radio-label:hover {
+    border-color: #6aa3d6;
+    background: #f1f5f9;
+}
+
+.option-radio:checked + .radio-text {
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.radio-label:has(.option-radio:checked) {
+    border-color: #6aa3d6;
+    background: linear-gradient(135deg, rgba(106,163,214,0.15), rgba(106,163,214,0.05));
+}
+
+.option-radio {
+    accent-color: #6aa3d6;
+}
+
+/* Buttons group */
+.option-buttons-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.option-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.option-btn:hover {
+    border-color: #6aa3d6;
+    background: #f1f5f9;
+}
+
+.option-btn.active {
+    border-color: #6aa3d6;
+    background: linear-gradient(135deg, rgba(106,163,214,0.2), rgba(106,163,214,0.08));
+    color: #1d4ed8;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.option-btn small {
+    font-size: 11px;
+    color: #059669;
+    font-weight: 600;
+}
+
+/* Error message */
+.options-error {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Price display */
+#productPrice {
+    transition: color 0.2s;
+}
+
+/* Add to cart button states */
+.btn-add:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-add.added {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+}
+
+/* Cart item options display */
+.cart-item-options {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #6aa3d6;
+}
+
+.cart-item-options strong {
+    color: #475569;
+    font-weight: 500;
+}
+
+/* Checkout options display */
+.checkout-item-options {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 6px;
+}
+
+.checkout-item-options span {
+    display: inline-block;
+    margin-right: 12px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 560px) {
+    .product-options {
+        padding: 12px;
+        margin: 12px 0;
+    }
+
+    .option-radio-group,
+    .option-buttons-group {
+        flex-direction: column;
+    }
+
+    .radio-label,
+    .option-btn {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}

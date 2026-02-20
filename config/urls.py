@@ -9,5 +9,11 @@ urlpatterns = [
     path('', include('shop.urls')),
 ]
 
+try:
+    import nested_admin  # noqa: F401
+    urlpatterns.insert(1, path('_nested_admin/', include('nested_admin.urls')))
+except Exception:
+    pass
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

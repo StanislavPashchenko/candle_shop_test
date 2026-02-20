@@ -2,6 +2,11 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
+
+try:
+    import nested_admin
+except Exception:
+    nested_admin = None
 from .models import (
     Candle,
     Category,
@@ -12,9 +17,15 @@ from .models import (
     CollectionItem,
     Order,
     OrderItem,
+    ProductOption,
+    ProductOptionValue,
+    OrderItemOption,
 )
 
-class CandleCategoryInline(admin.TabularInline):
+_NestedTabularInline = nested_admin.NestedTabularInline if nested_admin else admin.TabularInline
+_NestedModelAdmin = nested_admin.NestedModelAdmin if nested_admin else admin.ModelAdmin
+
+class CandleCategoryInline(_NestedTabularInline):
     model = CandleCategory
     extra = 1
     fields = ('category', 'order')
@@ -113,16 +124,39 @@ class CollectionAdmin(admin.ModelAdmin):
         return f'{count}/6'
     items_count.short_description = _('Товаров')
 
-class CandleImageInline(admin.TabularInline):
+
+class CandleImageInline(_NestedTabularInline):
     model = CandleImage
     extra = 0
     fields = ('image', 'order')
 
 
+# ========== INLINE ФОРМЫ ДЛЯ КОНФИГУРАТОРА ТОВАРОВ ==========
+
+
+class ProductOptionValueInline(_NestedTabularInline):
+    """Значения опции — редактируются внутри опции."""
+    model = ProductOptionValue
+    extra = 1
+    fields = ('value', 'value_ru', 'price_modifier', 'sort_order')
+    ordering = ('sort_order', 'id')
+
+
+class ProductOptionInline(_NestedTabularInline):
+    """Опции товара — редактируются прямо в карточке товара."""
+    model = ProductOption
+    extra = 1
+    fields = ('name', 'name_ru', 'is_required', 'input_type', 'sort_order')
+    ordering = ('sort_order', 'id')
+    show_change_link = True
+    if nested_admin:
+        inlines = [ProductOptionValueInline]
+
+
 @admin.register(Candle)
-class CandleAdmin(admin.ModelAdmin):
+class CandleAdmin(_NestedModelAdmin):
     list_display = ('display_name', 'price', 'order')
-    inlines = [CandleCategoryInline, CandleImageInline]
+    inlines = [CandleCategoryInline, CandleImageInline, ProductOptionInline]
 
     list_filter = (
         'is_hit',
@@ -161,11 +195,33 @@ class CandleAdmin(admin.ModelAdmin):
 
     display_name.short_description = _('Название')
 
+
+# ========== ADMIN КОНФИГУРАТОРА ТОВАРОВ ==========
+# Примечание: ProductOption и ProductOptionValue управляются только через inline в CandleAdmin
+# Отдельные админки убраны с боковой панели для упрощения
+
+
+class OrderItemOptionInline(admin.TabularInline):
+    """Отображение выбранных опций в позиции заказа."""
+    model = OrderItemOption
+    extra = 0
+    readonly_fields = ('option_name', 'value_name', 'price_modifier')
+    fields = ('option_name', 'value_name', 'price_modifier')
+
+
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ('price', 'quantity')
-    fields = ('candle', 'quantity', 'price')
+    readonly_fields = ('price', 'quantity', 'get_options_display')
+    fields = ('candle', 'quantity', 'price', 'get_options_display')
+
+    def get_options_display(self, obj):
+        """Отображает выбранные опции для позиции."""
+        opts = obj.selected_options.all()
+        if not opts:
+            return '-'
+        return ', '.join([f'{o.option_name}: {o.value_name}' for o in opts])
+    get_options_display.short_description = 'Выбранные опции'
 
 
 @admin.register(Order)

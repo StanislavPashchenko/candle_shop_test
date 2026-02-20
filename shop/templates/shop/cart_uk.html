@@ -7,7 +7,7 @@
     {% if items %}
     <div class="cart-items">
         {% for it in items %}
-        <div class="cart-row" data-pk="{{ it.candle.pk }}">
+        <div class="cart-row" data-cart-key="{{ it.cart_key }}">
             {% if it.candle.image and it.candle.image.url %}
                 <img src="{{ it.candle.image.url }}" alt="{{ it.candle.name }}">
             {% else %}
@@ -23,14 +23,23 @@
                     {% else %}-
                     {% endif %}
                 </p>
+
+                {% if it.options_display %}
+                <div class="cart-item-options">
+                    {% for opt_name, opt_value in it.options_display.items %}
+                        <strong>{{ opt_name }}:</strong> {{ opt_value }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <div class="qty-controls">
-                    <button class="qty-btn cart-decrease" data-pk="{{ it.candle.pk }}">−</button>
-                    <span id="qty-{{ it.candle.pk }}">{{ it.qty }}</span>
-                    <button class="qty-btn cart-increase" data-pk="{{ it.candle.pk }}">+</button>
-                    <button class="cart-remove" data-pk="{{ it.candle.pk }}">Видалити</button>
+                    <button class="qty-btn cart-decrease" data-pk="{{ it.cart_key }}">−</button>
+                    <span id="qty-{{ it.cart_key }}">{{ it.qty }}</span>
+                    <button class="qty-btn cart-increase" data-pk="{{ it.cart_key }}">+</button>
+                    <button class="cart-remove" data-pk="{{ it.cart_key }}">Видалити</button>
                 </div>
             </div>
-            <div class="cart-sub" id="subtotal-{{ it.candle.pk }}">{{ it.subtotal }} ₴</div>
+            <div class="cart-sub" id="subtotal-{{ it.cart_key }}">{{ it.subtotal }} ₴</div>
         </div>
         {% endfor %}
     </div>

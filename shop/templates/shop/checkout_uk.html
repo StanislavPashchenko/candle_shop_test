@@ -115,7 +115,16 @@
             <div class="order-items">
                 {% for item in items %}
                     <div class="order-item">
-                        <div class="item-name">{{ item.candle.display_name }}</div>
+                        <div class="item-info">
+                            <div class="item-name">{{ item.candle.display_name }}</div>
+                            {% if item.options_display %}
+                            <div class="checkout-item-options">
+                                {% for opt_name, opt_value in item.options_display.items %}
+                                    <span><em>{{ opt_name }}:</em> {{ opt_value }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
                         <div class="item-qty">x {{ item.qty }}</div>
                         <div class="item-price">{{ item.subtotal }} ₴</div>
                     </div>

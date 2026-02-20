@@ -293,3 +293,163 @@ class OrderItem(models.Model):
     
     def get_subtotal(self):
         return self.price * self.quantity
+
+
+# Удаление файлов изображений при удалении товара
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+import os
+
+
+@receiver(post_delete, sender=Candle)
+def delete_candle_images(sender, instance, **kwargs):
+    """Удаляет файлы изображений при удалении товара (Candle)."""
+    for field_name in ['image', 'image2', 'image3']:
+        field = getattr(instance, field_name, None)
+        if field and field.name:
+            try:
+                if os.path.isfile(field.path):
+                    os.remove(field.path)
+            except Exception:
+                pass
+
+
+
+# =================== КОНФИГУРАТОР ТОВАРОВ ===================
+
+class ProductOption(models.Model):
+    """Конкретная опция товара с типом ввода."""
+    INPUT_TYPE_CHOICES = [
+        ('select', 'Выпадающий список'),
+        ('radio', 'Радио-кнопки'),
+        ('buttons', 'Кнопки'),
+    ]
+
+    product = models.ForeignKey(
+        Candle,
+        on_delete=models.CASCADE,
+        related_name='options',
+        verbose_name='Товар',
+        null=True,
+        blank=True
+    )
+    name = models.CharField(max_length=100, verbose_name='Название опции (укр)')
+    name_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Название опции (рус)')
+    is_required = models.BooleanField(default=True, verbose_name='Обязательная')
+    input_type = models.CharField(
+        max_length=10,
+        choices=INPUT_TYPE_CHOICES,
+        default='select',
+        verbose_name='Тип ввода'
+    )
+    sort_order = models.PositiveIntegerField(default=0, verbose_name='Порядок сортировки')
+
+    class Meta:
+        verbose_name = 'Опция товара'
+        verbose_name_plural = 'Опции товара'
+        ordering = ['sort_order', 'id']
+        unique_together = ('product', 'name')
+
+    def __str__(self):
+        req = 'обяз.' if self.is_required else 'необяз.'
+        return f'{self.product.display_name()} — {self.display_name()} ({req})'
+
+    def display_name(self):
+        """Возвращает название опции на текущем языке."""
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('ru'):
+            return self.name_ru or self.name or ''
+        return self.name or self.name_ru or ''
+
+
+class ProductOptionValue(models.Model):
+    """Значение опции (например, "белый", "чёрный")."""
+    option = models.ForeignKey(
+        ProductOption,
+        on_delete=models.CASCADE,
+        related_name='values',
+        verbose_name='Опция'
+    )
+    value = models.CharField(max_length=100, verbose_name='Значение (укр)')
+    value_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Значение (рус)')
+    sort_order = models.PositiveIntegerField(default=0, verbose_name='Порядок сортировки')
+    price_modifier = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        blank=True,
+        verbose_name='Изменение цены (+/-)'
+    )
+
+    class Meta:
+        verbose_name = 'Значение опции'
+        verbose_name_plural = 'Значения опций'
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        if self.price_modifier:
+            return f'{self.display_value()} ({"+" if self.price_modifier > 0 else ""}{self.price_modifier} ₴)'
+        return self.display_value()
+
+    def display_value(self):
+        """Возвращает значение на текущем языке."""
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('ru'):
+            return self.value_ru or self.value or ''
+        return self.value or self.value_ru or ''
+
+
+# Расширение OrderItem для хранения выбранных опций
+class OrderItemOption(models.Model):
+    """Выбранная опция для позиции в заказе."""
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.CASCADE,
+        related_name='selected_options',
+        verbose_name='Позиция заказа'
+    )
+    option_name = models.CharField(max_length=100, verbose_name='Название опции')
+    value_name = models.CharField(max_length=100, verbose_name='Выбранное значение')
+    price_modifier = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        verbose_name='Изменение цены'
+    )
+
+    class Meta:
+        verbose_name = 'Выбранная опция'
+        verbose_name_plural = 'Выбранные опции'
+
+    def __str__(self):
+        return f'{self.option_name}: {self.value_name}'
+
+
+# Удаление файлов изображений при удалении товара
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+import os
+
+
+@receiver(post_delete, sender=Candle)
+def delete_candle_images(sender, instance, **kwargs):
+    """Удаляет файлы изображений при удалении товара (Candle)."""
+    for field_name in ['image', 'image2', 'image3']:
+        field = getattr(instance, field_name, None)
+        if field and field.name:
+            try:
+                if os.path.isfile(field.path):
+                    os.remove(field.path)
+            except Exception:
+                pass
+
+
+@receiver(post_delete, sender=CandleImage)
+def delete_candle_image_file(sender, instance, **kwargs):
+    """Удаляет файл изображения при удалении записи CandleImage."""
+    if instance.image and instance.image.name:
+        try:
+            if os.path.isfile(instance.image.path):
+                os.remove(instance.image.path)
+        except Exception:
+            pass

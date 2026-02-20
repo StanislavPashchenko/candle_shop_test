@@ -1,11 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import translation
-from .models import Candle, Collection, CollectionItem
+from .models import Candle, Collection, CollectionItem, ProductOption, ProductOptionValue, OrderItemOption
 from django.core.paginator import Paginator
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from decimal import Decimal
 import json
 import urllib.parse
 import urllib.request
@@ -13,6 +14,24 @@ from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _get_cart_count(cart) -> int:
+    if not isinstance(cart, dict):
+        return 0
+    total = 0
+    for v in cart.values():
+        if isinstance(v, dict):
+            try:
+                total += int(v.get('qty', 0) or 0)
+            except Exception:
+                continue
+        else:
+            try:
+                total += int(v or 0)
+            except Exception:
+                continue
+    return total
 
 
 def _telegram_send_message(text: str) -> bool:
@@ -89,11 +108,19 @@ def _telegram_format_order_message(order, items, total, lang: str) -> str:
         candle = it.get('candle')
         qty = it.get('qty')
         subtotal = it.get('subtotal')
+        options_display = it.get('options_display', {})
         try:
             name = candle.display_name if not callable(getattr(candle, 'display_name', None)) else candle.display_name()
         except Exception:
             name = str(candle)
+
+        # Основная строка товара
         lines.append(f'• {esc(name)} × {esc(qty)} — {esc(subtotal)}')
+
+        # Добавляем опции, если есть
+        if options_display:
+            opts_str = ', '.join([f'{k}: {v}' for k, v in options_display.items()])
+            lines.append(f'  └ {esc(opts_str)}')
 
     lines.append('')
     lines.append((f'<b>Итого:</b> {esc(total)}' if lang == 'ru' else f'<b>Разом:</b> {esc(total)}'))
@@ -119,7 +146,7 @@ def home(request):
     collections = Collection.objects.all().order_by('order', 'code')
     
     cart = request.session.get('cart', {})
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+    cart_count = _get_cart_count(cart)
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/home_{lang}.html'
     return render(request, template, {
@@ -213,7 +240,7 @@ def product_list(request):
         qs = qs.order_by('sort_priority', '-id')
 
     cart = request.session.get('cart', {})
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+    cart_count = _get_cart_count(cart)
     # categories for UI
     categories = Category.objects.select_related('group').all().order_by('group__order', 'group__name', 'order', 'name')
 
@@ -280,44 +307,210 @@ def product_detail(request, pk):
                 continue
     except Exception:
         pass
+
+    # Загружаем опции товара с prefetch_related для оптимизации
+    product_options = (
+        candle.options
+        .prefetch_related('values')
+        .order_by('sort_order', 'id')
+    )
+
+    # Формируем структурированные данные для фронтенда
+    options_data = []
+    for option in product_options:
+        has_values = option.values.exists()
+        option_data = {
+            'id': option.id,
+            'name': option.display_name(),
+            'is_required': option.is_required,
+            'is_required_effective': bool(option.is_required or has_values),
+            'input_type': option.input_type,
+            'values': [
+                {
+                    'id': val.id,
+                    'value': val.display_value(),
+                    'price_modifier': str(val.price_modifier)
+                }
+                for val in option.values.all().order_by('sort_order', 'id')
+            ]
+        }
+        options_data.append(option_data)
+
     cart = request.session.get('cart', {})
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+    cart_count = _get_cart_count(cart)
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/product_detail_{lang}.html'
-    return render(request, template, {'candle': candle, 'cart_count': cart_count, 'images': images})
+    return render(request, template, {
+        'candle': candle,
+        'cart_count': cart_count,
+        'images': images,
+        'options_data': options_data,
+        'has_options': bool(options_data)
+    })
 
 
 @require_POST
 def add_to_cart(request):
+    """
+    Добавление товара в корзину с опциями конфигуратора.
+    Ключ корзины: pk_optionId1:valueId1_optionId2:valueId2...
+    """
     try:
         data = json.loads(request.body.decode('utf-8'))
         pk = int(data.get('pk'))
         qty = int(data.get('qty', 1))
-    except Exception:
+        selected_options = data.get('options', {})  # {option_id: value_id, ...}
+    except Exception as e:
         return JsonResponse({'ok': False, 'error': 'invalid payload'}, status=400)
 
     candle = get_object_or_404(Candle, pk=pk)
+
+    # ===== СЕРВЕРНАЯ ВАЛИДАЦИЯ ОПЦИЙ =====
+    # Загружаем все опции товара для проверки
+    product_options = (
+        ProductOption.objects
+        .filter(product=candle)
+        .prefetch_related('values')
+    )
+
+    # Проверяем обязательные опции.
+    # Правило: если у опции есть значения, пользователь обязан выбрать одно значение,
+    # даже если is_required=False.
+    required_options = {
+        opt.id: opt
+        for opt in product_options
+        if opt.is_required or opt.values.exists()
+    }
+    for req_id, req_opt in required_options.items():
+        if str(req_id) not in selected_options or not selected_options[str(req_id)]:
+            return JsonResponse({
+                'ok': False,
+                'error': 'missing_required_options',
+                'message': f'Не выбрана обязательная опция: {req_opt.name}'
+            }, status=400)
+
+    # Проверяем, что выбранные значения принадлежат этому товару
+    validated_options = {}
+    total_price_modifier = 0
+
+    for opt_id_str, val_id in selected_options.items():
+        if not val_id:  # Пропускаем пустые значения необязательных опций
+            continue
+
+        try:
+            opt_id = int(opt_id_str)
+            val_id = int(val_id)
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'ok': False,
+                'error': 'invalid_option_format',
+                'message': 'Некорректный формат опций'
+            }, status=400)
+
+        # Проверяем, что опция принадлежит этому товару
+        option = product_options.filter(id=opt_id).first()
+        if not option:
+            return JsonResponse({
+                'ok': False,
+                'error': 'invalid_option',
+                'message': f'Опция {opt_id} не принадлежит данному товару'
+            }, status=400)
+
+        # Проверяем, что значение принадлежит этой опции
+        value = option.values.filter(id=val_id).first()
+        if not value:
+            return JsonResponse({
+                'ok': False,
+                'error': 'invalid_value',
+                'message': f'Значение {val_id} не принадлежит опции {option.name}'
+            }, status=400)
+
+        validated_options[opt_id] = {
+            'option': option,
+            'value': value,
+            'option_name': option.display_name(),
+            'value_name': value.display_value(),
+            'price_modifier': value.price_modifier
+        }
+        total_price_modifier += value.price_modifier
+
+    # Формируем уникальный ключ для корзины
+    # pk_option1:value1_option2:value2
+    option_parts = [f"{opt_id}:{val['value'].id}" for opt_id, val in sorted(validated_options.items())]
+    cart_key = f"{pk}_{'_'.join(option_parts)}" if option_parts else str(pk)
+
+    # Сохраняем в сессии
     cart = request.session.get('cart', {})
     cart = dict(cart)
-    cart[str(pk)] = cart.get(str(pk), 0) + max(1, qty)
+
+    # Структура корзины: {cart_key: {'qty': N, 'options': {...}, 'price_modifier': X}}
+    if cart_key not in cart:
+        cart[cart_key] = {
+            'pk': pk,
+            'qty': 0,
+            'options': {str(k): v['value'].id for k, v in validated_options.items()},
+            'options_display': {v['option_name']: v['value_name'] for v in validated_options.values()},
+            'price_modifier': str(total_price_modifier)
+        }
+
+    cart[cart_key]['qty'] += max(1, qty)
     request.session['cart'] = cart
     request.session.modified = True
-    total_items = sum(cart.values())
-    return JsonResponse({'ok': True, 'items': total_items})
+
+    total_items = sum(item['qty'] if isinstance(item, dict) else item for item in cart.values())
+
+    return JsonResponse({
+        'ok': True,
+        'items': total_items,
+        'cart_key': cart_key,
+        'final_price': str(candle.discounted_price() + total_price_modifier)
+    })
 
 
 def cart_view(request):
+    """Отображение корзины с учетом опций товаров."""
     cart = request.session.get('cart', {})
     items = []
     total = 0
-    for pk_str, qty in (cart.items() if isinstance(cart, dict) else []):
+
+    for cart_key, cart_item in (cart.items() if isinstance(cart, dict) else []):
+        # Определяем структуру: старая (просто qty) или новая (словарь)
+        if isinstance(cart_item, dict):
+            pk = cart_item.get('pk')
+            qty = cart_item.get('qty', 1)
+            price_modifier = Decimal(cart_item.get('price_modifier', '0') or '0')
+            options_display = cart_item.get('options_display', {})
+        else:
+            # Обратная совместимость со старой структурой
+            pk = cart_key
+            qty = cart_item
+            price_modifier = Decimal('0')
+            options_display = {}
+            cart_key = str(pk)
+
         try:
-            c = Candle.objects.get(pk=int(pk_str))
+            candle = Candle.objects.get(pk=int(pk))
+            final_price = candle.discounted_price() + price_modifier
+            subtotal = final_price * qty
+
+            items.append({
+                'cart_key': cart_key,
+                'candle': candle,
+                'qty': qty,
+                'price': final_price,
+                'subtotal': subtotal,
+                'options_display': options_display,
+                'price_modifier': price_modifier
+            })
+            total += subtotal
         except Candle.DoesNotExist:
             continue
-        items.append({'candle': c, 'qty': qty, 'subtotal': c.discounted_price() * qty})
-        total += c.discounted_price() * qty
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+
+    cart_count = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    ) if isinstance(cart, dict) else 0
+
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/cart_{lang}.html'
     return render(request, template, {'items': items, 'total': total, 'cart_count': cart_count})
@@ -325,9 +518,10 @@ def cart_view(request):
 
 @require_POST
 def update_cart(request):
+    """Обновление количества товара в корзине."""
     try:
         data = json.loads(request.body.decode('utf-8'))
-        pk = str(int(data.get('pk')))
+        cart_key = str(data.get('pk'))  # Теперь pk — это cart_key
         action = data.get('action')
         qty = int(data.get('qty', 1))
     except Exception:
@@ -335,66 +529,127 @@ def update_cart(request):
 
     cart = dict(request.session.get('cart', {}))
 
+    if cart_key not in cart:
+        return JsonResponse({'ok': False, 'error': 'item not found'}, status=404)
+
+    cart_item = cart[cart_key]
+
+    # Определяем структуру
+    if isinstance(cart_item, dict):
+        current_qty = cart_item.get('qty', 0)
+    else:
+        current_qty = cart_item
+
     if action == 'inc':
-        cart[pk] = cart.get(pk, 0) + 1
+        new_qty = current_qty + 1
     elif action == 'dec':
-        if cart.get(pk, 0) > 1:
-            cart[pk] = cart.get(pk, 0) - 1
-        else:
-            cart.pop(pk, None)
+        new_qty = current_qty - 1 if current_qty > 1 else 0
     elif action == 'set':
-        if qty > 0:
-            cart[pk] = qty
-        else:
-            cart.pop(pk, None)
+        new_qty = qty
     elif action == 'remove':
-        cart.pop(pk, None)
+        new_qty = 0
     else:
         return JsonResponse({'ok': False, 'error': 'unknown action'}, status=400)
+
+    if new_qty > 0:
+        if isinstance(cart_item, dict):
+            cart[cart_key]['qty'] = new_qty
+        else:
+            cart[cart_key] = new_qty
+    else:
+        cart.pop(cart_key, None)
 
     request.session['cart'] = cart
     request.session.modified = True
 
-    # compute totals
-    items_total = sum(cart.values())
-    total = 0
-    item_qty = cart.get(pk, 0)
-    item_subtotal = '0'
-    for k, v in cart.items():
+    # Подсчет итогов
+    items_total = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    )
+
+    total = Decimal('0')
+    item_subtotal = Decimal('0')
+
+    for key, item in cart.items():
         try:
-            c = Candle.objects.get(pk=int(k))
-            total += c.discounted_price() * v
+            if isinstance(item, dict):
+                pk = item.get('pk')
+                item_qty = item.get('qty', 1)
+                price_mod = Decimal(item.get('price_modifier', '0') or '0')
+            else:
+                pk = key
+                item_qty = item
+                price_mod = Decimal('0')
+
+            c = Candle.objects.get(pk=int(pk))
+            item_price = c.discounted_price() + price_mod
+
+            if key == cart_key:
+                item_subtotal = item_price * (new_qty if new_qty > 0 else 0)
+
+            total += item_price * item_qty
         except Candle.DoesNotExist:
             continue
 
-    if item_qty:
-        try:
-            c = Candle.objects.get(pk=int(pk))
-            item_subtotal = str(c.discounted_price() * item_qty)
-        except Candle.DoesNotExist:
-            item_subtotal = '0'
-
-    return JsonResponse({'ok': True, 'items': items_total, 'item_qty': item_qty, 'item_subtotal': item_subtotal, 'total': str(total)})
+    return JsonResponse({
+        'ok': True,
+        'items': items_total,
+        'item_qty': new_qty if new_qty > 0 else 0,
+        'item_subtotal': str(item_subtotal),
+        'total': str(total)
+    })
 
 
 def checkout(request):
+    """Оформление заказа с сохранением выбранных опций товаров."""
     from .forms import OrderForm
     from .models import Order, OrderItem
-    
+    from decimal import Decimal
+
     cart = request.session.get('cart', {})
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
-    
-    # Получаем товары из корзины
+    cart_count = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    ) if isinstance(cart, dict) else 0
+
+    # Получаем товары из корзины с опциями
     items = []
-    total = 0
-    for pk_str, qty in (cart.items() if isinstance(cart, dict) else []):
+    total = Decimal('0')
+    for cart_key, cart_item in (cart.items() if isinstance(cart, dict) else []):
+        if isinstance(cart_item, dict):
+            pk = cart_item.get('pk')
+            qty = cart_item.get('qty', 1)
+            price_modifier = Decimal(cart_item.get('price_modifier', '0') or '0')
+            options_display = cart_item.get('options_display', {})
+            selected_options = cart_item.get('options', {})
+        else:
+            # Обратная совместимость
+            pk = cart_key
+            qty = cart_item
+            price_modifier = Decimal('0')
+            options_display = {}
+            selected_options = {}
+
         try:
-            c = Candle.objects.get(pk=int(pk_str))
-            items.append({'candle': c, 'qty': qty, 'subtotal': c.discounted_price() * qty})
-            total += c.discounted_price() * qty
+            candle = Candle.objects.get(pk=int(pk))
+            final_price = candle.discounted_price() + price_modifier
+            subtotal = final_price * qty
+
+            items.append({
+                'cart_key': cart_key,
+                'candle': candle,
+                'qty': qty,
+                'price': final_price,
+                'subtotal': subtotal,
+                'options_display': options_display,
+                'selected_options': selected_options,
+                'price_modifier': price_modifier
+            })
+            total += subtotal
         except Candle.DoesNotExist:
             continue
-    
+
     lang = (translation.get_language() or 'uk')[:2]
 
     def _apply_ru_placeholders(f):
@@ -404,12 +659,12 @@ def checkout(request):
             except Exception:
                 pass
         return f
-    
+
     if request.method == 'POST':
         form = _apply_ru_placeholders(OrderForm(request.POST))
         if form.is_valid() and items:
             order = form.save(commit=False)
-            
+
             # Получаем warehouse из скрытого поля
             warehouse = request.POST.get('warehouse', '').strip()
             logger.info('Selected warehouse: %s', warehouse)
@@ -424,19 +679,33 @@ def checkout(request):
                     'total': total,
                     'cart_count': cart_count
                 })
-            
+
             order.warehouse = warehouse
             order.save()
-            
-            # Добавляем товары в заказ
+
+            # Добавляем товары в заказ с опциями
             for item in items:
-                OrderItem.objects.create(
+                order_item = OrderItem.objects.create(
                     order=order,
                     candle=item['candle'],
                     quantity=item['qty'],
-                    price=item['candle'].discounted_price()
+                    price=item['price']
                 )
-            
+
+                # Сохраняем выбранные опции
+                for opt_id, val_id in item['selected_options'].items():
+                    try:
+                        option = ProductOption.objects.get(id=int(opt_id))
+                        value = ProductOptionValue.objects.get(id=int(val_id))
+                        OrderItemOption.objects.create(
+                            order_item=order_item,
+                            option_name=option.display_name(),
+                            value_name=value.display_value(),
+                            price_modifier=value.price_modifier
+                        )
+                    except (ProductOption.DoesNotExist, ProductOptionValue.DoesNotExist):
+                        pass
+
             # Очищаем корзину
             request.session['cart'] = {}
             request.session.modified = True
@@ -462,7 +731,7 @@ def checkout(request):
             })
     else:
         form = _apply_ru_placeholders(OrderForm())
-    
+
     template = f'shop/checkout_{lang}.html'
     return render(request, template, {
         'form': form,
@@ -538,7 +807,10 @@ def get_nova_poshta_warehouses(request):
 
 def privacy_policy(request):
     cart = request.session.get('cart', {})
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+    cart_count = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    ) if isinstance(cart, dict) else 0
     lang = (translation.get_language() or 'uk')[:2]
     template = f'shop/privacy_{lang}.html'
     contact_email = ''
@@ -549,22 +821,25 @@ def collection_detail(request, code):
     """Страница коллекции по настроению с до 6 товарами."""
     from django.utils import translation
     collection = get_object_or_404(Collection, code=code)
-    
+
     # Получаем товары коллекции, отсортированные по order
     items = (collection.items
              .select_related('candle')
              .order_by('order', 'id')[:6])
-    
+
     cart = request.session.get('cart', {})
-    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
-    
+    cart_count = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    ) if isinstance(cart, dict) else 0
+
     # Выбираем шаблон в зависимости от языка
     lang = translation.get_language() or 'uk'
     if lang.startswith('ru'):
         template = 'shop/mood_collection_ru.html'
     else:
         template = 'shop/mood_collection_uk.html'
-    
+
     return render(request, template, {
         'collection': collection,
         'items': items,

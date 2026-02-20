@@ -65,6 +65,12 @@ INSTALLED_APPS = [
     'shop',
 ]
 
+try:
+    import nested_admin  # noqa: F401
+    INSTALLED_APPS.insert(INSTALLED_APPS.index('shop'), 'nested_admin')
+except Exception:
+    pass
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

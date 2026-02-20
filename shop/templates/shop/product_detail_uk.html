@@ -2,9 +2,9 @@
 
 {% load i18n %}
 
-
-
 {% block content %}
+
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
 <div class="product-detail">
 
@@ -25,7 +25,6 @@
                 <img id="productImage" class="clickable-image" style="max-height: 500px; width: auto; max-width: 100%; border-radius: 12px; display: block; margin: 0 auto;" src="https://picsum.photos/seed/{{ candle.pk|default:0 }}/800/600" alt="{{ candle.name }}" onclick="openImageModal(this)">
 
             {% endif %}
-
 
 
             {% if images|length > 1 %}
@@ -78,9 +77,63 @@
 
         <div class="actions">
 
-            <strong class="price">{{ candle.price }} ₴</strong>
+            <strong class="price" id="productPrice">{{ candle.price }} ₴</strong>
 
-            <button class="btn btn-add" data-pk="{{ candle.pk }}">Додати до кошика</button>
+            {% if has_options %}
+            <!-- Конфигуратор опций -->
+            <div class="product-options" id="productOptions">
+                {% for option in options_data %}
+                <div class="option-item" data-option-id="{{ option.id }}" data-required="{{ option.is_required_effective|yesno:'true,false' }}">
+                    <label class="option-label">
+                        {{ option.name }}
+                        {% if option.is_required_effective %}
+                        <span class="required-mark">*</span>
+                        {% endif %}
+                    </label>
+
+                    {% if option.input_type == 'select' %}
+                    <div class="option-checkbox-group">
+                        {% for value in option.values %}
+                        <label class="checkbox-label">
+                            <input type="radio" class="option-input option-checkbox" name="option_{{ option.id }}"
+                                   value="{{ value.id }}" data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}">
+                            <span class="checkbox-text">{{ value.value }}{% if value.price_modifier != "0.00" %} ({{ value.price_modifier|floatformat:0 }} ₴){% endif %}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    {% elif option.input_type == 'radio' %}
+                    <div class="option-radio-group">
+                        {% for value in option.values %}
+                        <label class="radio-label">
+                            <input type="radio" class="option-input option-radio" name="option_{{ option.id }}"
+                                   value="{{ value.id }}" data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}">
+                            <span class="radio-text">{{ value.value }}{% if value.price_modifier != "0.00" %} ({{ value.price_modifier|floatformat:0 }} ₴){% endif %}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    {% elif option.input_type == 'buttons' %}
+                    <div class="option-buttons-group">
+                        {% for value in option.values %}
+                        <button type="button" class="option-btn" data-value-id="{{ value.id }}"
+                                data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}">
+                            {{ value.value }}{% if value.price_modifier != "0.00" %}<br><small>+{{ value.price_modifier|floatformat:0 }} ₴</small>{% endif %}
+                        </button>
+                        {% endfor %}
+                        <input type="hidden" class="option-input" name="option_{{ option.id }}" data-option-id="{{ option.id }}">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="options-error" id="optionsError" style="display: none; color: #c00; margin: 10px 0; padding: 8px 12px; background: #fee; border-radius: 6px;"></div>
+            </div>
+            {% endif %}
+
+            <button class="btn btn-add" id="addToCartBtn" data-pk="{{ candle.pk }}" {% if has_options %}disabled{% endif %}>
+                Додати до кошика
+            </button>
 
         </div>
 
@@ -318,8 +371,201 @@ document.onkeydown = function(e) {
 
 };
 
+// ========== КОНФИГУРАТОР ТОВАРОВ ==========
+
+(function() {
+    const hasOptions = document.getElementById('productOptions') !== null;
+    if (!hasOptions) return;
+
+    const basePrice = parseFloat('{{ candle.price }}');
+    let currentPriceModifier = 0;
+
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const optionsError = document.getElementById('optionsError');
+    const priceEl = document.getElementById('productPrice');
+
+    // Обновление цены
+    function updatePrice() {
+        let modifier = 0;
+        document.querySelectorAll('.option-input').forEach(input => {
+            if (input.tagName === 'SELECT') {
+                const selected = input.options[input.selectedIndex];
+                if (selected) {
+                    modifier += parseFloat(selected.dataset.priceModifier || 0);
+                }
+            } else if (input.type === 'radio' && input.checked) {
+                modifier += parseFloat(input.dataset.priceModifier || 0);
+            } else if (input.type === 'hidden' && input.value) {
+                // Для кнопок берем из активной кнопки
+                const group = input.closest('.option-buttons-group');
+                if (group) {
+                    const activeBtn = group.querySelector('.option-btn.active');
+                    if (activeBtn) {
+                        modifier += parseFloat(activeBtn.dataset.priceModifier || 0);
+                    }
+                }
+            }
+        });
+        currentPriceModifier = modifier;
+        const finalPrice = basePrice + modifier;
+        priceEl.textContent = finalPrice.toFixed(0) + ' ₴';
+    }
+
+    // Проверка обязательных опций
+    function validateOptions() {
+        let isValid = true;
+        const missing = [];
+
+        document.querySelectorAll('.option-item[data-required="true"]').forEach(item => {
+            const optionId = item.dataset.optionId;
+            const input = item.querySelector('.option-input');
+            let hasValue = false;
+
+            if (input.tagName === 'SELECT') {
+                hasValue = input.value !== '';
+            } else if (input.type === 'radio') {
+                const checked = item.querySelector('input[type="radio"]:checked');
+                hasValue = !!checked;
+            } else if (input.type === 'hidden') {
+                hasValue = input.value !== '';
+            }
+
+            if (!hasValue) {
+                isValid = false;
+                const label = item.querySelector('.option-label').textContent.trim();
+                missing.push(label.replace('*', '').trim());
+            }
+        });
+
+        return { isValid, missing };
+    }
+
+    // Обновление состояния кнопки
+    function updateButtonState() {
+        const { isValid, missing } = validateOptions();
+        addToCartBtn.disabled = !isValid;
+
+        if (!isValid) {
+            optionsError.style.display = 'block';
+            optionsError.textContent = 'Будь ласка, оберіть: ' + missing.join(', ');
+        } else {
+            optionsError.style.display = 'none';
+            optionsError.textContent = '';
+        }
+    }
+
+    // Сбор выбранных опций
+    function getSelectedOptions() {
+        const options = {};
+        document.querySelectorAll('.option-input').forEach(input => {
+            const optionId = input.dataset.optionId;
+            let value = null;
+
+            if (input.tagName === 'SELECT') {
+                value = input.value || null;
+            } else if (input.type === 'radio' && input.checked) {
+                value = input.value;
+            } else if (input.type === 'hidden') {
+                value = input.value || null;
+            }
+
+            if (value) {
+                options[optionId] = value;
+            }
+        });
+        return options;
+    }
+
+    // Обработчики событий
+    document.querySelectorAll('.option-checkbox').forEach(radio => {
+        radio.addEventListener('change', function() {
+            updatePrice();
+            updateButtonState();
+        });
+    });
+
+    document.querySelectorAll('.option-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
+            updatePrice();
+            updateButtonState();
+        });
+    });
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const group = this.closest('.option-buttons-group');
+            const hidden = group.querySelector('input[type="hidden"]');
+
+            // Убираем active со всех кнопок в группе
+            group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+            // Добавляем active на нажатую
+            this.classList.add('active');
+            // Устанавливаем значение в hidden input
+            hidden.value = this.dataset.valueId;
+
+            updatePrice();
+            updateButtonState();
+        });
+    });
+
+    // Обработчик добавления в корзину
+    addToCartBtn.addEventListener('click', async function() {
+        const { isValid } = validateOptions();
+        if (!isValid) {
+            updateButtonState();
+            return;
+        }
+
+        const pk = this.dataset.pk;
+        const options = getSelectedOptions();
+
+        try {
+            const response = await fetch('/add-to-cart/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                },
+                body: JSON.stringify({
+                    pk: pk,
+                    qty: 1,
+                    options: options
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.ok) {
+                // Обновляем счетчик корзины
+                const cartCounter = document.querySelector('.cart-count');
+                if (cartCounter) {
+                    cartCounter.textContent = data.items;
+                }
+
+                // Показываем уведомление
+                const btn = addToCartBtn;
+                const originalText = btn.textContent;
+                btn.textContent = 'Додано!';
+                btn.classList.add('added');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('added');
+                }, 1500);
+            } else {
+                optionsError.style.display = 'block';
+                optionsError.textContent = data.message || 'Помилка при додаванні в кошик';
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            optionsError.style.display = 'block';
+            optionsError.textContent = 'Помилка з\'єднання. Спробуйте ще раз.';
+        }
+    });
+
+    // Инициализация
+    updateButtonState();
+})();
+
 </script>
-
-
 
 {% endblock %}
