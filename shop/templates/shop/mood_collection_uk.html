@@ -55,10 +55,17 @@
                                 <span class="lux-price-new">{{ item.candle.price }} ₴</span>
                             {% endif %}
                         </div>
-                        <button class="lux-btn btn-add" type="button" data-pk="{{ item.candle.pk }}">
-                            <span>Купить</span>
+                        {% if item.candle.pk in items_with_options_ids %}
+                        <a href="{% url 'product_detail' item.candle.pk %}" class="lux-btn btn-add">
+                            <span>Купити</span>
+                            <div class="lux-btn-bg" aria-hidden="true"></div>
+                        </a>
+                        {% else %}
+                        <button class="lux-btn btn-add" type="button" data-add-to-cart="{{ item.candle.pk }}">
+                            <span>Купити</span>
                             <div class="lux-btn-bg" aria-hidden="true"></div>
                         </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>

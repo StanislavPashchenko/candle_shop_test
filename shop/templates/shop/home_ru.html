@@ -50,7 +50,11 @@
                 <h3>{{ candle.display_name }}</h3>
                 <strong>{{ candle.price }} ₴</strong>
             </a>
+            {% if candle.pk in candles_with_options_ids %}
+            <a href="{% url 'product_detail' candle.pk %}" class="btn-buy btn-add">Купить</a>
+            {% else %}
             <button class="btn-buy btn-add" type="button" data-pk="{{ candle.pk }}">Купить</button>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

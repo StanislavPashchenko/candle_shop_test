@@ -481,7 +481,7 @@ document.onkeydown = function(e) {
         const options = getSelectedOptions();
 
         try {
-            const response = await fetch('/add-to-cart/', {
+            const response = await fetch('/cart/add/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

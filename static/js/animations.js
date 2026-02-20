@@ -336,12 +336,13 @@
     document.addEventListener('click', function(e){
         const btn = e.target.closest('.btn-add');
         if(!btn) return;
-        e.preventDefault();
-        e.stopPropagation();
-        animateAdd(btn);
         // AJAX add to cart
         const pk = btn.getAttribute('data-pk');
         if(!pk) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        animateAdd(btn);
 
         function getCookie(name){
             const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');

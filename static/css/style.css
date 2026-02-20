@@ -326,7 +326,295 @@
 
 
 
-/* Product image hover zoom animation */
+/* ============================================
+   КРАСИВЫЙ КОНФИГУРАТОР ОПЦИЙ ТОВАРА
+   ============================================ */
+
+/* Контейнер опций */
+.product-options {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 20px -5px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Заголовок опции */
+.option-item {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.option-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+}
+
+.required-mark {
+    color: #ef4444;
+    margin-left: 4px;
+    font-size: 16px;
+}
+
+/* Группа чекбоксов/радио */
+.option-checkbox-group,
+.option-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Кастомные радио-кнопки в виде карточек */
+.radio-label,
+.checkbox-label {
+    position: relative;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 18px;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+    user-select: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.radio-label:hover,
+.checkbox-label:hover {
+    border-color: #6aa3d6;
+    background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(106, 163, 214, 0.2);
+}
+
+/* Скрываем нативный input */
+.radio-label input[type="radio"],
+.checkbox-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Состояние выбранного элемента */
+.radio-label:has(input:checked),
+.checkbox-label:has(input:checked) {
+    background: linear-gradient(135deg, #6aa3d6 0%, #4a8bc2 100%);
+    border-color: #4a8bc2;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 16px rgba(106, 163, 214, 0.35),
+        0 2px 4px rgba(74, 139, 194, 0.2);
+}
+
+.radio-label:has(input:checked) .radio-text,
+.checkbox-label:has(input:checked) .checkbox-text {
+    color: white;
+}
+
+/* Иконка галочки для выбранного */
+.radio-label:has(input:checked)::before,
+.checkbox-label:has(input:checked)::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Цена в опции */
+.radio-text small,
+.checkbox-text small {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-left: 4px;
+}
+
+.radio-label:has(input:checked) .radio-text small,
+.checkbox-label:has(input:checked) .checkbox-text small {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Кнопки опций (buttons тип) */
+.option-buttons-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.option-btn {
+    position: relative;
+    padding: 14px 22px;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    min-width: 80px;
+    text-align: center;
+}
+
+.option-btn:hover {
+    border-color: #6aa3d6;
+    background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(106, 163, 214, 0.2);
+}
+
+.option-btn.selected {
+    background: linear-gradient(135deg, #6aa3d6 0%, #4a8bc2 100%);
+    border-color: #4a8bc2;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(106, 163, 214, 0.4),
+        0 2px 4px rgba(74, 139, 194, 0.2);
+}
+
+.option-btn.selected::after {
+    content: "✓";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    background: #10b981;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+.option-btn small {
+    display: block;
+    font-size: 11px;
+    margin-top: 4px;
+    color: #059669;
+    font-weight: 600;
+}
+
+.option-btn.selected small {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Анимация появления */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.option-item {
+    animation: slideUpFade 0.4s ease-out forwards;
+}
+
+.option-item:nth-child(1) { animation-delay: 0.05s; }
+.option-item:nth-child(2) { animation-delay: 0.1s; }
+.option-item:nth-child(3) { animation-delay: 0.15s; }
+.option-item:nth-child(4) { animation-delay: 0.2s; }
+.option-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* Сообщение об ошибке */
+.options-error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: #dc2626;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.options-error::before {
+    content: "⚠";
+    font-size: 16px;
+}
+
+/* Анимация цены */
+@keyframes pricePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+#productPrice.updating {
+    animation: pricePulse 0.3s ease;
+    color: #059669;
+}
+
+/* Дополнительные улучшения */
+.option-label::before {
+    content: "◆";
+    color: #6aa3d6;
+    margin-right: 8px;
+    font-size: 10px;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 560px) {
+    .product-options {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .radio-label,
+    .checkbox-label,
+    .option-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    
+    .option-checkbox-group,
+    .option-radio-group,
+    .option-buttons-group {
+        gap: 8px;
+    }
+}
+
+/* ============================================ */
 
 
 
@@ -4496,59 +4784,35 @@ body{
 
 
 
+    .hits-grid .card img{
 
 
 
+     width:100%; 
 
 
 
+     aspect-ratio: 4 / 5;
 
+     height:auto;
 
-/* Product image sizing: vertical (Instagram-style) portrait ratio */
-
-
-
-.card img{
-
-
-
-    width:100%; 
+     object-fit:cover; 
 
 
 
-    aspect-ratio: 4 / 5;
+     width: calc(100% + 24px);
+
+     margin: -12px -12px 10px -12px;
+
+     display:block; 
 
 
 
-    height:auto;
+     border-radius: 12px 12px 0 0;
 
+     transition: transform 300ms ease;
 
-
-    object-fit:cover; 
-
-
-
-    width: calc(100% + 24px);
-
-
-
-    margin: -12px -12px 10px -12px;
-
-
-
-    display:block; 
-
-
-
-    border-radius: 12px 12px 0 0;
-
-
-
-    transition: transform 300ms ease;
-
-
-
-}
+ }
 
 
 

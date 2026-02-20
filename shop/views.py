@@ -142,6 +142,12 @@ def home(request):
         hits.extend(list(fill_qs))
     candles = hits
     
+    # Prefetch options to check has_options for each candle
+    candles_with_options_ids = []
+    for c in Candle.objects.filter(pk__in=[c.pk for c in candles]).prefetch_related('options'):
+        if c.options.exists():
+            candles_with_options_ids.append(c.pk)
+    
     # Get collections for mood section
     collections = Collection.objects.all().order_by('order', 'code')
     
@@ -152,7 +158,8 @@ def home(request):
     return render(request, template, {
         'candles': candles, 
         'cart_count': cart_count,
-        'collections': collections
+        'collections': collections,
+        'candles_with_options_ids': candles_with_options_ids
     })
 
 
@@ -375,7 +382,7 @@ def add_to_cart(request):
 
     # Проверяем обязательные опции.
     # Правило: если у опции есть значения, пользователь обязан выбрать одно значение,
-    # даже если is_required=False.
+    # дажен если is_required=False.
     required_options = {
         opt.id: opt
         for opt in product_options
@@ -697,12 +704,13 @@ def checkout(request):
                     try:
                         option = ProductOption.objects.get(id=int(opt_id))
                         value = ProductOptionValue.objects.get(id=int(val_id))
-                        OrderItemOption.objects.create(
-                            order_item=order_item,
-                            option_name=option.display_name(),
-                            value_name=value.display_value(),
-                            price_modifier=value.price_modifier
-                        )
+                        if val_id:
+                            OrderItemOption.objects.create(
+                                order_item=order_item,
+                                option_name=option.display_name(),
+                                value_name=value.display_value(),
+                                price_modifier=value.price_modifier
+                            )
                     except (ProductOption.DoesNotExist, ProductOptionValue.DoesNotExist):
                         pass
 
@@ -825,7 +833,14 @@ def collection_detail(request, code):
     # Получаем товары коллекции, отсортированные по order
     items = (collection.items
              .select_related('candle')
+             .prefetch_related('candle__options')
              .order_by('order', 'id')[:6])
+    
+    # Создаем список ID товаров с опциями
+    items_with_options_ids = []
+    for item in items:
+        if item.candle.options.exists():
+            items_with_options_ids.append(item.candle.pk)
 
     cart = request.session.get('cart', {})
     cart_count = sum(
@@ -844,4 +859,5 @@ def collection_detail(request, code):
         'collection': collection,
         'items': items,
         'cart_count': cart_count,
+        'items_with_options_ids': items_with_options_ids,
     })
