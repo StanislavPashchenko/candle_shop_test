@@ -417,9 +417,9 @@ document.addEventListener('click', function(e){
         if(data.item_qty && qtyEl) qtyEl.textContent = data.item_qty;
         if(subEl) subEl.textContent = (data.item_subtotal ? data.item_subtotal : '0') + ' ₴';
 
-        // if removed, remove row
-        if(!data.item_qty){
-            const row = document.querySelector('.cart-row[data-pk="' + pk + '"]');
+        // if removed, remove row (check for null, undefined, 0, or "0")
+        if(!data.item_qty || parseInt(data.item_qty, 10) === 0){
+            const row = document.querySelector('.cart-row[data-cart-key="' + pk + '"]');
             if(row) row.remove();
         }
 
