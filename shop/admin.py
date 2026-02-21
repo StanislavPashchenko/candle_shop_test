@@ -155,10 +155,11 @@ class ProductOptionInline(_NestedTabularInline):
 
 @admin.register(Candle)
 class CandleAdmin(_NestedModelAdmin):
-    list_display = ('display_name', 'price', 'order')
+    list_display = ('display_name', 'price', 'is_available', 'order')
     inlines = [CandleCategoryInline, CandleImageInline, ProductOptionInline]
 
     list_filter = (
+        'is_available',
         'is_hit',
         'is_on_sale',
     )
@@ -179,6 +180,7 @@ class CandleAdmin(_NestedModelAdmin):
         ('Catalog', {
             'fields': (
                 'price',
+                'is_available',
                 'image',
                 'image2',
                 'image3',

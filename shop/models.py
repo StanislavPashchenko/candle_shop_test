@@ -151,6 +151,8 @@ class Candle(models.Model):
     description_ru = models.TextField(blank=True, null=True, verbose_name='Описание (рус)')
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
+    is_available = models.BooleanField(default=True, verbose_name='В наличии')
+
     image = models.ImageField(upload_to='candles/')
     image2 = models.ImageField(upload_to='candles/', blank=True, null=True)
     image3 = models.ImageField(upload_to='candles/', blank=True, null=True)

@@ -38,9 +38,11 @@
         {% for candle in candles|slice:":4" %}
         <div class="card reveal">
             <div class="card-badges">
+                {% if not candle.is_available %}<span class="badge badge-oos">Нет в наличии</span>{% endif %}
                 {% if candle.is_hit %}<span class="badge badge-hit">Хит</span>{% endif %}
                 {% if candle.is_on_sale and candle.discount_percent %}<span class="badge badge-sale">-{{ candle.discount_percent }}%</span>{% endif %}
             </div>
+
             <a class="card-link" href="{% url 'product_detail' candle.pk %}">
                 {% if candle.image and candle.image.url %}
                     <img src="{{ candle.image.url }}" alt="{{ candle.name }}">
@@ -50,10 +52,14 @@
                 <h3>{{ candle.display_name }}</h3>
                 <strong>{{ candle.price }} ₴</strong>
             </a>
-            {% if candle.pk in candles_with_options_ids %}
-            <a href="{% url 'product_detail' candle.pk %}" class="btn-buy btn-add">Купить</a>
+            {% if not candle.is_available %}
+            <button class="btn-buy btn-add" type="button" disabled>Нет в наличии</button>
             {% else %}
-            <button class="btn-buy btn-add" type="button" data-pk="{{ candle.pk }}">Купить</button>
+                {% if candle.pk in candles_with_options_ids %}
+                <a href="{% url 'product_detail' candle.pk %}" class="btn-buy btn-add">Купить</a>
+                {% else %}
+                <button class="btn-buy btn-add" type="button" data-pk="{{ candle.pk }}">Купить</button>
+                {% endif %}
             {% endif %}
         </div>
         {% endfor %}

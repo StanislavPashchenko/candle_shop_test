@@ -60,6 +60,12 @@
 
         <h2>{{ candle.display_name }}</h2>
 
+        <div style="margin: 6px 0 0; display: flex; gap: 8px; flex-wrap: wrap;">
+            {% if not candle.is_available %}<span class="badge badge-oos">Нет в наличии</span>{% endif %}
+            {% if candle.is_hit %}<span class="badge badge-hit">Хит</span>{% endif %}
+            {% if candle.is_on_sale and candle.discount_percent %}<span class="badge badge-sale">-{{ candle.discount_percent }}%</span>{% endif %}
+        </div>
+
         {% if candle.category_links.exists %}
             <p class="aroma">
                 Категории:
@@ -130,8 +136,8 @@
             </div>
             {% endif %}
 
-            <button class="btn btn-add" id="addToCartBtn" data-pk="{{ candle.pk }}" {% if has_options %}disabled{% endif %}>
-                Добавить в корзину
+            <button class="btn btn-add" id="addToCartBtn" data-pk="{{ candle.pk }}" {% if has_options or not candle.is_available %}disabled{% endif %}>
+                {% if not candle.is_available %}Нет в наличии{% else %}Добавить в корзину{% endif %}
             </button>
 
         </div>
@@ -497,15 +503,14 @@ document.onkeydown = function(e) {
             const data = await response.json();
 
             if (data.ok) {
-                const cartCounter = document.querySelector('.cart-count');
-                if (cartCounter) {
-                    cartCounter.textContent = data.items;
-                }
+                const cartCounter = document.getElementById('cart-count');
+                if (cartCounter) cartCounter.textContent = data.items;
 
                 const btn = addToCartBtn;
                 const originalText = btn.textContent;
                 btn.textContent = 'Добавлено!';
                 btn.classList.add('added');
+
                 setTimeout(() => {
                     btn.textContent = originalText;
                     btn.classList.remove('added');

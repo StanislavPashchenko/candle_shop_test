@@ -36,6 +36,7 @@
                     <div class="lux-glow" aria-hidden="true"></div>
                     <button class="lux-favorite" type="button" aria-label="Добавить в избранное">♡</button>
                     <div class="lux-badges">
+                        {% if not item.candle.is_available %}<span class="badge badge-oos">Немає в наявності</span>{% endif %}
                         {% if item.candle.is_hit %}<span class="badge badge-hit">Хит</span>{% endif %}
                         {% if item.candle.is_on_sale and item.candle.discount_percent %}<span class="badge badge-sale">-{{ item.candle.discount_percent }}%</span>{% endif %}
                     </div>
@@ -55,16 +56,23 @@
                                 <span class="lux-price-new">{{ item.candle.price }} ₴</span>
                             {% endif %}
                         </div>
-                        {% if item.candle.pk in items_with_options_ids %}
-                        <a href="{% url 'product_detail' item.candle.pk %}" class="lux-btn btn-add">
-                            <span>Купити</span>
-                            <div class="lux-btn-bg" aria-hidden="true"></div>
-                        </a>
-                        {% else %}
-                        <button class="lux-btn btn-add" type="button" data-add-to-cart="{{ item.candle.pk }}">
-                            <span>Купити</span>
+                        {% if not item.candle.is_available %}
+                        <button class="lux-btn btn-add" type="button" disabled>
+                            <span>Немає в наявності</span>
                             <div class="lux-btn-bg" aria-hidden="true"></div>
                         </button>
+                        {% else %}
+                            {% if item.candle.pk in items_with_options_ids %}
+                            <a href="{% url 'product_detail' item.candle.pk %}" class="lux-btn btn-add">
+                                <span>Купити</span>
+                                <div class="lux-btn-bg" aria-hidden="true"></div>
+                            </a>
+                            {% else %}
+                            <button class="lux-btn btn-add" type="button" data-add-to-cart="{{ item.candle.pk }}">
+                                <span>Купити</span>
+                                <div class="lux-btn-bg" aria-hidden="true"></div>
+                            </button>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>

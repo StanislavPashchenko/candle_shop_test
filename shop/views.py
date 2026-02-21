@@ -372,6 +372,13 @@ def add_to_cart(request):
 
     candle = get_object_or_404(Candle, pk=pk)
 
+    if not candle.is_available:
+        return JsonResponse({
+            'ok': False,
+            'error': 'out_of_stock',
+            'message': 'Товара нет в наличии'
+        }, status=400)
+
     # ===== СЕРВЕРНАЯ ВАЛИДАЦИЯ ОПЦИЙ =====
     # Загружаем все опции товара для проверки
     product_options = (
