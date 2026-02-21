@@ -7437,3 +7437,50 @@ body.image-modal-open .category-bar{z-index:0}
         justify-content: flex-start;
     }
 }
+
+/* Disable animations on mobile devices */
+@media (max-width: 768px) {
+    /* Disable animated background on body */
+    body {
+        animation: none !important;
+        background-size: 100% 100% !important;
+    }
+
+    /* Disable animated blobs */
+    .animated-bg,
+    .animated-bg .blob,
+    .animated-bg .b1,
+    .animated-bg .b2,
+    .animated-bg .b3 {
+        display: none !important;
+        animation: none !important;
+    }
+
+    /* Disable reveal animations */
+    .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    /* Disable option-item animations */
+    .option-item {
+        animation: none !important;
+    }
+
+    /* Disable price pulse animation */
+    #productPrice.updating {
+        animation: none !important;
+    }
+
+    /* Disable modal fadeIn animation */
+    .image-modal.active {
+        animation: none !important;
+    }
+
+    /* Disable all transitions on mobile for performance */
+    * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

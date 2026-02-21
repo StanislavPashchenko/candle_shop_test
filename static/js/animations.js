@@ -1,5 +1,14 @@
+// Check if mobile device (max-width: 768px)
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
 // Simple scroll reveal using IntersectionObserver
 (function(){
+    // On mobile, make all reveal elements visible immediately
+    if (isMobile) {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+        return;
+    }
+    
     const revealSelector = '.reveal';
     const items = document.querySelectorAll(revealSelector);
     if(!items.length) return;
@@ -315,6 +324,9 @@
 // Add-to-cart visual feedback
 (function(){
     function animateAdd(btn){
+        // Skip animation on mobile devices
+        if (isMobile) return;
+        
         const rect = btn.getBoundingClientRect();
         const dot = document.createElement('div');
         dot.style.position = 'fixed';
@@ -457,7 +469,7 @@ document.addEventListener('click', function(e){
     if(prev) prev.addEventListener('click', ()=>{ go(idx-1); resetTimer(); });
 
     function startTimer(){
-        // autoplay every 2 seconds per request
+        // autoplay every 4 seconds on all devices
         timer = setInterval(nextSlide, 4000);
     }
     function resetTimer(){
