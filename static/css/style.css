@@ -54,7 +54,7 @@
 
 
 
-    --hero-inner-height: 70px; /* default hero inner height */
+    --hero-inner-height: 62px; /* default hero inner height */
 
 
 
@@ -70,7 +70,7 @@
 
 
 
-    --hero-logo-height: 70px; /* default logo height */
+    --hero-logo-height: 42px; /* default logo height */
 
 
 
@@ -78,7 +78,7 @@
 
 
 
-    --hero-logo-height-sm: 72px; /* small screens */
+    --hero-logo-height-sm: 56px; /* small screens */
 
 
 
@@ -190,11 +190,11 @@
 
 
 
-     --header-search-top: 30px;
+     --header-search-top: 17px;
 
 
 
-     --header-search-right: -150px;
+     --header-search-right: -45px;
 
 
 
@@ -202,7 +202,7 @@
 
 
 
-     --header-search-left: auto;
+     --header-search-left: 50px;
 
 
 
@@ -318,6 +318,52 @@
 
 
 
+}
+
+
+
+.header-search--wide{width:100%; display:flex; justify-content:center}
+
+
+
+.header-search__field{position:relative; width:min(620px, 100%)}
+
+
+
+.header-search--wide input{
+
+    width:100%;
+
+    max-width:none;
+
+    height:34px;
+
+    padding: 6px 44px 6px 14px;
+
+    border-radius: 10px;
+
+    border: 1px solid rgba(0,0,0,0.12);
+
+    background:#fff;
+
+    box-shadow: none;
+
+}
+
+
+
+.header-search__icon{
+    position:absolute;
+    right: 110px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a98a1;
+    pointer-events:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:18px;
+    height:18px;
 }
 
 
@@ -2162,7 +2208,7 @@ body{
 
 
 
-.hero-inner{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; height:var(--hero-inner-height)}
+.hero-inner{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:14px; height:var(--hero-inner-height)}
 
 
 
@@ -2202,11 +2248,11 @@ body{
 
 
 
-.hero-cart{position:absolute; left:var(--hero-cart-left); right:var(--hero-cart-right); top:var(--hero-cart-top); bottom:var(--hero-cart-bottom)}
+.hero-cart{position:static; transform:translateY(-2px)}
 
 
 
-.hero-lang-switch{position:absolute; left:var(--hero-lang-switch-left); right:var(--hero-lang-switch-right); top:var(--hero-lang-switch-top); bottom:var(--hero-lang-switch-bottom); display:flex; align-items:center; z-index:3}
+.hero-lang-switch{position:static; display:flex; align-items:center; z-index:3; margin-top:4px}
 
 
 
@@ -2226,7 +2272,27 @@ body{
 
 
 
-.hero-center{display:flex; flex-direction:column; align-items:center; gap:6px; justify-content:center; margin:0 auto}
+.hero-left{flex:0 0 auto; display:flex; align-items:center}
+
+
+
+.hero-center{flex:1 1 auto; min-width:0; display:flex; align-items:center; justify-content:center}
+
+
+
+.hero-right{flex:0 0 auto; display:flex; align-items:center; gap:12px; margin-top:6px}
+
+
+
+.hero-social{display:flex; align-items:center; gap:10px; transform:translateY(-2px)}
+
+
+
+.hero-social__btn{width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; background:#fff; border:1px solid rgba(0,0,0,0.06); color:#111; text-decoration:none; box-shadow:0 6px 16px rgba(16,12,8,0.06)}
+
+
+
+.hero-social__btn:hover{background:#f6fbff}
 
 
 
@@ -4444,7 +4510,7 @@ body{
 
 
 
-    .hero-logo{height:30px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:55vw; transform:scale(1.1); transform-origin:left center}
+    .hero-logo{height:20px; width:auto; border-radius:10px; position:relative ; top:auto; left:auto; max-width:55vw; transform:scale(1.1); transform-origin:left center}
 
 
 
@@ -4476,11 +4542,24 @@ body{
 
 
 
-    /* Мобильная версия: переключатель языка становится частью компактного блока действий */
+    /* Мобильная версия: скрываем соц.иконки, уменьшаем логотип */
+    .hero-social{display:none}
+    
+    .hero-logo{height:28px; width:auto; max-width:50vw; transform:none}
+    
+    .hero-right{gap:6px; margin-top:0; align-items:center}
+    
+    .hero-lang-switch{transform:translateY(2px); margin-top:0}
+    
+    .hero-lang-switch .lang-btn{font-size:0.8rem; padding:4px 2px}
+    
+    .cart-icon{width:26px; height:26px; transform:translateY(-2px)}
+    
+    .cart-count-bubble{transform:translateY(-4px)}
 
 
 
-    .hero-lang-switch{display:flex; position: relative; left:auto; right:auto; top:auto; bottom:auto; z-index:auto; transform:translateY(8px)}
+    .hero-lang-switch{display:flex; position: relative; left:auto; right:auto; top:auto; bottom: 5px; z-index:auto; transform:translateY(8px)}
 
 
 

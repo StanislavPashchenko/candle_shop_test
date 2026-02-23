@@ -70,11 +70,11 @@
 
     <div class="hero-inner container">
 
-        <div class="hero-langs">
+        <div class="hero-left">
             <a href="/" class="brand-link">
                 <picture>
-                    <source media="(max-width:560px)" srcset="/static/images/logo-new.svg?v=20260214-7">
-                    <img src="/static/images/logo-new.svg?v=20260214-7" alt="Good Karma Light" class="hero-logo">
+                    <source media="(max-width:560px)" srcset="/static/images/Good Karma Light (1).svg?v=20260223-1">
+                    <img src="/static/images/Good Karma Light (1).svg?v=20260223-1" alt="Good Karma Light" class="hero-logo">
                 </picture>
             </a>
         </div>
@@ -82,45 +82,53 @@
 
 
         <div class="hero-center">
-
-            <!-- <h1 class="hero-title">Good Karma Light</h1> -->
-
+            <form action="{% url 'product_list' %}" method="get" class="header-search header-search--wide">
+                <div class="header-search__field">
+                    <input type="text" name="q" placeholder="Что вы ищете?" value="{{ request.GET.q }}">
+                    <span class="header-search__icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </div>
+            </form>
         </div>
 
 
 
-        <div class="hero-actions">
+        <div class="hero-right">
+            <div class="hero-social" aria-label="Social links">
+                <a class="hero-social__btn" href="mailto:goodkarmalight@gmail.com" aria-label="Gmail">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a class="hero-social__btn" href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </a>
+            </div>
 
             <div class="hero-lang-switch">
-
                 <form action="{% url 'set_language' %}" method="post" class="lang-switch">
-
                     {% csrf_token %}
-
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
-
                     <button type="submit" name="language" value="uk" class="lang-btn">UK</button>
-
                     <button type="submit" name="language" value="ru" class="lang-btn">RU</button>
-
                 </form>
-
             </div>
-
-
 
             <div class="hero-cart">
-
-                <a href="/cart/" class="cart-link">
-
+                <a href="/cart/" class="cart-link" aria-label="Корзина">
                     <img src="/static/images/cart_user.svg" alt="Корзина" class="cart-icon">
-
                     <span id="cart-count" class="cart-count-bubble">{{ cart_count|default:"0" }}</span>
-
                 </a>
-
             </div>
-
         </div>
 
     </div>
@@ -155,8 +163,11 @@
 
             <li class="category-mobile-only"><a href="{% url 'product_list' %}">Все товары</a></li>
 
+            <li class="category-mobile-only"><a href="{% url 'scent_list' %}">Ароматы</a></li>
+
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'home' %}">Главная</a></li>
             <li class="category-desktop-only"><a class="category-link--all" href="{% url 'product_list' %}">Все товары</a></li>
+            <li class="category-desktop-only"><a class="category-link--all" href="{% url 'scent_list' %}">Ароматы</a></li>
 
             {% for grp in all_category_groups %}
 
@@ -177,18 +188,6 @@
             </li>
 
             {% endfor %}
-
-            <li class="category-desktop-only category-search">
-                <form action="{% url 'product_list' %}" method="get" class="category-search-form">
-                    <input type="text" name="q" placeholder="Что вы ищете?" value="{{ request.GET.q }}" class="category-search-input">
-                    <span class="category-search-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2"/>
-                            <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </span>
-                </form>
-            </li>
 
             <li class="category-mobile-only">
                 <button type="button" class="cat-toggle" data-action="toggle-categories" aria-haspopup="dialog" aria-expanded="false">Категории</button>
@@ -255,6 +254,13 @@
             <path d="M3 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         </svg>
         <span class="mobile-bottom-nav__label">Все товары</span>
+    </a>
+    <a class="mobile-bottom-nav__item" href="{% url 'scent_list' %}">
+        <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2C8 2 5 5 5 9c0 3 2 5 3 6s2 3 2 5h4c0-2 1-4 2-5s3-3 3-6c0-4-3-7-7-7Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 22v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="mobile-bottom-nav__label">Ароматы</span>
     </a>
     <button class="mobile-bottom-nav__item" type="button" data-action="mobile-bottom-categories">
         <svg class="mobile-bottom-nav__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

@@ -78,9 +78,6 @@
                 </p>
             {% endif %}
 
-
-        <p class="desc">{{ candle.display_description|linebreaksbr }}</p>
-
         <div class="actions">
 
             <strong class="price" id="productPrice">{{ candle.price }} ₴</strong>
@@ -102,7 +99,7 @@
                         {% for value in option.values %}
                         <label class="checkbox-label">
                             <input type="radio" class="option-input option-checkbox" name="option_{{ option.id }}"
-                                   value="{{ value.id }}" data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}">
+                                   value="{{ value.id }}" data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}" data-image-url="{{ value.image_url }}">
                             <span class="checkbox-text">{{ value.value }}{% if value.price_modifier != "0.00" %} ({{ value.price_modifier|floatformat:0 }} ₴){% endif %}</span>
                         </label>
                         {% endfor %}
@@ -113,7 +110,7 @@
                         {% for value in option.values %}
                         <label class="radio-label">
                             <input type="radio" class="option-input option-radio" name="option_{{ option.id }}"
-                                   value="{{ value.id }}" data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}">
+                                   value="{{ value.id }}" data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}" data-image-url="{{ value.image_url }}">
                             <span class="radio-text">{{ value.value }}{% if value.price_modifier != "0.00" %} ({{ value.price_modifier|floatformat:0 }} ₴){% endif %}</span>
                         </label>
                         {% endfor %}
@@ -123,7 +120,7 @@
                     <div class="option-buttons-group">
                         {% for value in option.values %}
                         <button type="button" class="option-btn" data-value-id="{{ value.id }}"
-                                data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}">
+                                data-option-id="{{ option.id }}" data-price-modifier="{{ value.price_modifier }}" data-image-url="{{ value.image_url }}">
                             {{ value.value }}{% if value.price_modifier != "0.00" %}<br><small>+{{ value.price_modifier|floatformat:0 }} ₴</small>{% endif %}
                         </button>
                         {% endfor %}
@@ -142,6 +139,8 @@
             </button>
 
         </div>
+
+        <p class="desc">{{ candle.display_description|linebreaksbr }}</p>
 
     </div>
 
@@ -383,6 +382,9 @@ document.onkeydown = function(e) {
     const hasOptions = document.getElementById('productOptions') !== null;
     if (!hasOptions) return;
 
+    const productImageEl = document.getElementById('productImage');
+    const baseImageSrc = productImageEl ? productImageEl.getAttribute('src') : null;
+
     const basePrice = parseFloat('{{ candle.price }}');
     let currentPriceModifier = 0;
 
@@ -487,6 +489,11 @@ document.onkeydown = function(e) {
         radio.addEventListener('change', function() {
             updatePrice();
             updateButtonState();
+
+            if (productImageEl) {
+                const u = this.dataset.imageUrl || '';
+                productImageEl.src = u || baseImageSrc || productImageEl.src;
+            }
         });
     });
 
@@ -494,6 +501,11 @@ document.onkeydown = function(e) {
         radio.addEventListener('change', function() {
             updatePrice();
             updateButtonState();
+
+            if (productImageEl) {
+                const u = this.dataset.imageUrl || '';
+                productImageEl.src = u || baseImageSrc || productImageEl.src;
+            }
         });
     });
 
@@ -511,6 +523,11 @@ document.onkeydown = function(e) {
 
             updatePrice();
             updateButtonState();
+
+            if (productImageEl) {
+                const u = this.dataset.imageUrl || '';
+                productImageEl.src = u || baseImageSrc || productImageEl.src;
+            }
         });
     });
 

@@ -1,0 +1,117 @@
+{% extends 'shop/base_ru.html' %}
+{% load i18n %}
+
+{% block content %}
+<section class="home-section scent-section">
+    <div class="listing-header">
+        <h2>Ароматы</h2>
+        <p class="tagline">Описание ароматов, которые вы можете найти в наших свечах</p>
+    </div>
+
+    <div class="scents-grid">
+        {% for scent in scents %}
+        <div class="scent-card reveal">
+            {% if scent.image and scent.image.url %}
+                <div class="scent-image-wrapper">
+                    <img src="{{ scent.image.url }}" alt="{{ scent.display_name }}" class="scent-image">
+                </div>
+            {% endif %}
+            <div class="scent-content">
+                <h3>{{ scent.display_name }}</h3>
+                {% if scent.display_description %}
+                    <p class="scent-description">{{ scent.display_description|truncatewords:30|linebreaksbr }}</p>
+                {% endif %}
+                <a class="scent-more" href="{% url 'scent_detail' scent.pk %}">Подробнее</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>Ароматы пока не добавлены.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+.scent-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.scents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.scent-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.scent-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.scent-image-wrapper {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+}
+
+.scent-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.scent-card:hover .scent-image {
+    transform: scale(1.05);
+}
+
+.scent-content {
+    padding: 20px;
+}
+
+.scent-content h3 {
+    margin: 0 0 12px 0;
+    color: #234a5f;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.scent-description {
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.scent-more{
+    display:inline-block;
+    margin-top:12px;
+    text-decoration:none;
+    font-weight:700;
+    color: var(--accent);
+}
+
+.scent-more:hover{ text-decoration:underline }
+
+@media (max-width: 768px) {
+    .scents-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .scent-image-wrapper {
+        height: 200px;
+    }
+}
+</style>
+{% endblock %}

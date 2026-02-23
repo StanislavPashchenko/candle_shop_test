@@ -20,6 +20,7 @@ from .models import (
     ProductOption,
     ProductOptionValue,
     OrderItemOption,
+    Scent,
 )
 
 _NestedTabularInline = nested_admin.NestedTabularInline if nested_admin else admin.TabularInline
@@ -138,7 +139,7 @@ class ProductOptionValueInline(_NestedTabularInline):
     """Значения опции — редактируются внутри опции."""
     model = ProductOptionValue
     extra = 1
-    fields = ('value', 'value_ru', 'price_modifier', 'sort_order')
+    fields = ('value', 'value_ru', 'image', 'price_modifier', 'sort_order')
     ordering = ('sort_order', 'id')
 
 
@@ -249,4 +250,18 @@ class OrderAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(Scent)
+class ScentAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'name_ru', 'order')
+    search_fields = ('name', 'name_ru')
+    ordering = ('order', 'name')
+    fieldsets = (
+        (None, {'fields': ('name', 'name_ru', 'description', 'description_ru', 'image', 'order')}),
+    )
+
+    def display_name(self, obj):
+        return obj.display_name()
+    display_name.short_description = _('Название аромата')
 

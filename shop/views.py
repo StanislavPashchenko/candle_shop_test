@@ -256,6 +256,12 @@ def product_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Создаем список ID товаров с опциями (как на главной странице)
+    candles_with_options_ids = []
+    for c in page_obj:
+        if c.options.exists():
+            candles_with_options_ids.append(c.pk)
+
     # preserve other query params when building pagination links
     current_get = request.GET.copy()
     if 'page' in current_get:
@@ -272,6 +278,7 @@ def product_list(request):
         'cart_count': cart_count,
         'categories': categories,
         'querystring': querystring,
+        'candles_with_options_ids': candles_with_options_ids,
     })
 
 
@@ -330,13 +337,14 @@ def product_detail(request, pk):
             'id': option.id,
             'name': option.display_name(),
             'is_required': option.is_required,
-            'is_required_effective': bool(option.is_required or has_values),
+            'is_required_effective': bool(option.is_required),
             'input_type': option.input_type,
             'values': [
                 {
                     'id': val.id,
                     'value': val.display_value(),
-                    'price_modifier': str(val.price_modifier)
+                    'price_modifier': str(val.price_modifier),
+                    'image_url': (val.image.url if getattr(val, 'image', None) else '')
                 }
                 for val in option.values.all().order_by('sort_order', 'id')
             ]
@@ -387,13 +395,11 @@ def add_to_cart(request):
         .prefetch_related('values')
     )
 
-    # Проверяем обязательные опции.
-    # Правило: если у опции есть значения, пользователь обязан выбрать одно значение,
-    # дажен если is_required=False.
+    # Проверяем обязательные опции (только те, у которых is_required=True)
     required_options = {
         opt.id: opt
         for opt in product_options
-        if opt.is_required or opt.values.exists()
+        if opt.is_required
     }
     for req_id, req_opt in required_options.items():
         if str(req_id) not in selected_options or not selected_options[str(req_id)]:
@@ -867,4 +873,44 @@ def collection_detail(request, code):
         'items': items,
         'cart_count': cart_count,
         'items_with_options_ids': items_with_options_ids,
+    })
+
+
+def scent_list(request):
+    """Страница со списком ароматов (только описания, без товаров)."""
+    from .models import Scent
+    
+    scents = Scent.objects.all().order_by('order', 'name')
+    
+    cart = request.session.get('cart', {})
+    cart_count = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    ) if isinstance(cart, dict) else 0
+    
+    lang = (translation.get_language() or 'uk')[:2]
+    template = f'shop/scent_{lang}.html'
+    return render(request, template, {
+        'scents': scents,
+        'cart_count': cart_count,
+    })
+
+
+def scent_detail(request, pk: int):
+    """Детальная страница аромата с длинным описанием."""
+    from .models import Scent
+
+    scent = get_object_or_404(Scent, pk=pk)
+
+    cart = request.session.get('cart', {})
+    cart_count = sum(
+        item['qty'] if isinstance(item, dict) else item
+        for item in cart.values()
+    ) if isinstance(cart, dict) else 0
+
+    lang = (translation.get_language() or 'uk')[:2]
+    template = f'shop/scent_detail_{lang}.html'
+    return render(request, template, {
+        'scent': scent,
+        'cart_count': cart_count,
     })

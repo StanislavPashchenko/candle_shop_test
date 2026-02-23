@@ -56,7 +56,11 @@
                         <strong class="price-current">{{ candle.price }} ₴</strong>
                     {% endif %}
                 </div>
+                {% if candle.pk in candles_with_options_ids %}
+                <button class="btn-buy btn-add" type="button" onclick="window.location.href='{% url 'product_detail' candle.pk %}'">Купити</button>
+                {% else %}
                 <button class="btn-buy btn-add" type="button" data-pk="{{ candle.pk }}">Купити</button>
+                {% endif %}
             </div>
         </a>
         {% empty %}

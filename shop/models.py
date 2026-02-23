@@ -374,6 +374,12 @@ class ProductOptionValue(models.Model):
     )
     value = models.CharField(max_length=100, verbose_name='Значение (укр)')
     value_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Значение (рус)')
+    image = models.ImageField(
+        upload_to='option_values/',
+        blank=True,
+        null=True,
+        verbose_name='Картинка для значения'
+    )
     sort_order = models.PositiveIntegerField(default=0, verbose_name='Порядок сортировки')
     price_modifier = models.DecimalField(
         max_digits=8,
@@ -449,6 +455,50 @@ def delete_candle_images(sender, instance, **kwargs):
 @receiver(post_delete, sender=CandleImage)
 def delete_candle_image_file(sender, instance, **kwargs):
     """Удаляет файл изображения при удалении записи CandleImage."""
+    if instance.image and instance.image.name:
+        try:
+            if os.path.isfile(instance.image.path):
+                os.remove(instance.image.path)
+        except Exception:
+            pass
+
+
+class Scent(models.Model):
+    """Ароматы/запахи для отдельной страницы с описанием."""
+    name = models.CharField(max_length=100, verbose_name='Название аромата (укр)')
+    name_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Название аромата (рус)')
+    description = models.TextField(blank=True, verbose_name='Описание аромата (укр)')
+    description_ru = models.TextField(blank=True, null=True, verbose_name='Описание аромата (рус)')
+    image = models.ImageField(upload_to='scents/', blank=True, null=True, verbose_name='Картинка аромата')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        verbose_name = 'Аромат'
+        verbose_name_plural = 'Ароматы'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.display_name()
+
+    def display_name(self):
+        """Возвращает название аромата на текущем языке."""
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('ru'):
+            return self.name_ru or self.name or ''
+        return self.name or self.name_ru or ''
+
+    def display_description(self):
+        """Возвращает описание аромата на текущем языке."""
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('ru'):
+            return self.description_ru or self.description or ''
+        return self.description or self.description_ru or ''
+
+
+# Удаление файлов изображений при удалении аромата
+@receiver(post_delete, sender=Scent)
+def delete_scent_image(sender, instance, **kwargs):
+    """Удаляет файл изображения при удалении аромата."""
     if instance.image and instance.image.name:
         try:
             if os.path.isfile(instance.image.path):

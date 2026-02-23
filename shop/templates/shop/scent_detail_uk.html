@@ -1,0 +1,39 @@
+{% extends 'shop/base_uk.html' %}
+{% load i18n %}
+
+{% block content %}
+<section class="home-section scent-detail-section">
+    <div class="scent-detail">
+        <div class="scent-detail__header">
+            <a class="scent-back" href="{% url 'scent_list' %}">← Назад до ароматів</a>
+            <h1 class="scent-title">{{ scent.display_name }}</h1>
+        </div>
+
+        {% if scent.image and scent.image.url %}
+            <div class="scent-hero">
+                <img src="{{ scent.image.url }}" alt="{{ scent.display_name }}" class="scent-hero__img">
+            </div>
+        {% endif %}
+
+        {% if scent.display_description %}
+            <div class="scent-text">{{ scent.display_description|linebreaksbr }}</div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+.scent-detail-section{max-width:1000px;margin:0 auto;padding:20px}
+.scent-detail{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.08)}
+.scent-detail__header{padding:18px 20px 6px}
+.scent-back{display:inline-block;text-decoration:none;font-weight:700;color:var(--accent);margin-bottom:10px}
+.scent-back:hover{text-decoration:underline}
+.scent-title{margin:0;color:#234a5f;font-size:2rem;line-height:1.2}
+.scent-hero{width:100%;height:380px;overflow:hidden}
+.scent-hero__img{width:100%;height:100%;object-fit:cover;display:block}
+.scent-text{padding:16px 20px 22px;color:#555;line-height:1.8;font-size:1rem}
+@media (max-width:768px){
+  .scent-hero{height:240px}
+  .scent-title{font-size:1.6rem}
+}
+</style>
+{% endblock %}
