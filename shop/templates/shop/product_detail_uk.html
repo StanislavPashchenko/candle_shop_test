@@ -69,7 +69,7 @@
 
             {% if candle.category_links.exists %}
                 <p class="aroma">
-                    Категории:
+                    Категорії:
                     {% for link in candle.category_links.all %}
                         <span class="category-chip">
                             {{ link.category.display_name }}
