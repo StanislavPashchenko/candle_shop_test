@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import translation
 from .models import Candle, Collection, CollectionItem, ProductOption, ProductOptionValue, OrderItemOption
 from django.core.paginator import Paginator
-from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import Q, Case, When, Value, IntegerField, Prefetch
 from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -878,9 +878,20 @@ def collection_detail(request, code):
 
 def scent_list(request):
     """Страница со списком ароматов (только описания, без товаров)."""
-    from .models import Scent
+    from .models import Scent, ScentCategory, ScentCategoryGroup
     
     scents = Scent.objects.all().order_by('order', 'name')
+    category_id = request.GET.get('category')
+    if category_id:
+        try:
+            scents = scents.filter(categories__id=int(category_id)).distinct()
+        except (ValueError, TypeError):
+            pass
+    scent_categories = ScentCategory.objects.all().order_by('order', 'name')
+    scent_category_groups = ScentCategoryGroup.objects.prefetch_related(
+        Prefetch('categories', queryset=ScentCategory.objects.order_by('order', 'name'))
+    ).all().order_by('order', 'name')
+    scent_categories_ungrouped = ScentCategory.objects.filter(group__isnull=True).order_by('order', 'name')
     
     cart = request.session.get('cart', {})
     cart_count = sum(
@@ -892,6 +903,9 @@ def scent_list(request):
     template = f'shop/scent_{lang}.html'
     return render(request, template, {
         'scents': scents,
+        'scent_categories': scent_categories,
+        'scent_category_groups': scent_category_groups,
+        'scent_categories_ungrouped': scent_categories_ungrouped,
         'cart_count': cart_count,
     })
 

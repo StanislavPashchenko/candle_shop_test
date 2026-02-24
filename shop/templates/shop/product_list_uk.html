@@ -9,8 +9,17 @@
             <div class="field">
                 <select name="category">
                     <option value="">Всі категорії</option>
-                    {% for cat in categories %}
+                    {% for cat in all_categories %}
+                    {% if not cat.group %}
                     <option value="{{ cat.id }}" {% if request.GET.category|slugify == cat.id|slugify %}selected{% endif %}>{{ cat.display_name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                    {% for grp in all_category_groups %}
+                    <optgroup label="{{ grp.display_name }}">
+                        {% for cat in grp.categories.all %}
+                        <option value="{{ cat.id }}" {% if request.GET.category|slugify == cat.id|slugify %}selected{% endif %}>{{ cat.display_name }}</option>
+                        {% endfor %}
+                    </optgroup>
                     {% endfor %}
                 </select>
             </div>

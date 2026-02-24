@@ -6,6 +6,21 @@
     <div class="listing-header">
         <h2>Ароматы</h2>
         <p class="tagline">Описание ароматов, которые вы можете найти в наших свечах</p>
+        <div class="scent-categories" data-scent-categories-root>
+            <button type="button" class="scent-categories__toggle" data-scent-categories-toggle aria-expanded="false">Все категории</button>
+            <div class="scent-categories__panel" data-scent-categories>
+                <a class="mobile-categories__link{% if not request.GET.category %} is-active{% endif %}" href="{% url 'scent_list' %}">Все категории</a>
+                {% for cat in scent_categories_ungrouped %}
+                <a class="mobile-categories__link{% if request.GET.category|slugify == cat.id|slugify %} is-active{% endif %}" href="{% url 'scent_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a>
+                {% endfor %}
+                {% for grp in scent_category_groups %}
+                <div class="mobile-categories__group">{{ grp.display_name }}</div>
+                {% for cat in grp.categories.all %}
+                <a class="mobile-categories__link{% if request.GET.category|slugify == cat.id|slugify %} is-active{% endif %}" href="{% url 'scent_list' %}?category={{ cat.id }}">{{ cat.display_name }}</a>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <div class="scents-grid">
@@ -37,12 +52,86 @@
     padding: 20px;
 }
 
+.scent-categories{
+    margin-top:12px;
+    padding:10px;
+    border-radius:16px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 6px 18px rgba(40,90,140,0.08);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    position:relative;
+}
+
+.scent-categories__toggle{
+    appearance:none;
+    border:1px solid rgba(0,0,0,0.08);
+    background:#fff;
+    color:#3b5d7a;
+    font-weight:700;
+    font-size:0.95rem;
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.scent-categories__toggle::after{
+    content:"▾";
+    font-size:0.9rem;
+    color:var(--muted);
+}
+
+.scent-categories.is-open .scent-categories__toggle::after{
+    transform:rotate(180deg);
+}
+
+.scent-categories__panel{
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    position:absolute;
+    top:calc(100% + 8px);
+    left:0;
+    right:0;
+    padding:10px;
+    border-radius:14px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,0.08);
+    box-shadow:0 12px 26px rgba(40,90,140,0.16);
+    z-index:20;
+    max-height:320px;
+    overflow:auto;
+}
+
+.scent-categories.is-open .scent-categories__panel{
+    display:flex;
+}
+
+.scent-categories .mobile-categories__link{
+    border-radius:12px;
+}
+
+.scent-categories .mobile-categories__link.is-active{
+    background: rgba(106, 163, 214, 0.18);
+    color: var(--accent);
+}
+
+.scent-categories .mobile-categories__group{
+    padding:10px 12px 6px;
+}
+
 .scents-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
     margin-top: 30px;
 }
+
 
 .scent-card {
     background: #fff;
@@ -114,4 +203,17 @@
     }
 }
 </style>
+
+<script>
+(function(){
+    const root = document.querySelector('[data-scent-categories-root]');
+    const toggle = document.querySelector('[data-scent-categories-toggle]');
+    if(!root || !toggle) return;
+    toggle.addEventListener('click', function(){
+        const open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+        root.classList.toggle('is-open', !open);
+    });
+})();
+</script>
 {% endblock %}

@@ -463,6 +463,71 @@ def delete_candle_image_file(sender, instance, **kwargs):
             pass
 
 
+class ScentCategoryGroup(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name='Название группы (укр)')
+    name_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Название группы (рус)')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        verbose_name_plural = 'Группы категорий ароматов'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.display_name()
+
+    def display_name(self):
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('ru'):
+            return self.name_ru or self.name or ''
+        return self.name or self.name_ru or ''
+
+
+class ScentCategory(models.Model):
+    group = models.ForeignKey(
+        ScentCategoryGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='categories',
+        verbose_name='Группа',
+    )
+    name = models.CharField(max_length=100, unique=True, verbose_name='Название категории (укр)')
+    name_ru = models.CharField(max_length=100, blank=True, null=True, verbose_name='Название категории (рус)')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        verbose_name = 'Категория аромата'
+        verbose_name_plural = 'Ароматы категории'
+        ordering = ['group__order', 'group__name', 'order', 'name']
+
+    def __str__(self):
+        return self.display_name()
+
+    def display_name(self):
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('ru'):
+            return self.name_ru or self.name or ''
+        return self.name or self.name_ru or ''
+
+
+class ScentCategoryLink(models.Model):
+    scent = models.ForeignKey(
+        'Scent',
+        on_delete=models.CASCADE,
+        related_name='category_links'
+    )
+    category = models.ForeignKey(
+        'ScentCategory',
+        on_delete=models.CASCADE,
+        related_name='scent_links'
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ('scent', 'category')
+
+
 class Scent(models.Model):
     """Ароматы/запахи для отдельной страницы с описанием."""
     name = models.CharField(max_length=100, verbose_name='Название аромата (укр)')
@@ -470,6 +535,13 @@ class Scent(models.Model):
     description = models.TextField(blank=True, verbose_name='Описание аромата (укр)')
     description_ru = models.TextField(blank=True, null=True, verbose_name='Описание аромата (рус)')
     image = models.ImageField(upload_to='scents/', blank=True, null=True, verbose_name='Картинка аромата')
+    categories = models.ManyToManyField(
+        ScentCategory,
+        through='ScentCategoryLink',
+        related_name='scents',
+        verbose_name='Категории ароматов',
+        blank=True,
+    )
     order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
 
     class Meta:

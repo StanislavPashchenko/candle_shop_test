@@ -21,6 +21,8 @@ from .models import (
     ProductOptionValue,
     OrderItemOption,
     Scent,
+    ScentCategory,
+    ScentCategoryLink,
 )
 
 _NestedTabularInline = nested_admin.NestedTabularInline if nested_admin else admin.TabularInline
@@ -38,6 +40,13 @@ class CategoryInline(admin.TabularInline):
     extra = 0
     fields = ('name', 'name_ru', 'order')
     ordering = ('order', 'name')
+
+
+class ScentCategoryInline(_NestedTabularInline):
+    model = ScentCategoryLink
+    extra = 1
+    fields = ('category', 'order')
+    ordering = ('order',)
 
 
 class CollectionItemInlineForm(ModelForm):
@@ -253,10 +262,12 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 @admin.register(Scent)
-class ScentAdmin(admin.ModelAdmin):
+class ScentAdmin(_NestedModelAdmin):
     list_display = ('display_name', 'name_ru', 'order')
+    list_filter = ('categories',)
     search_fields = ('name', 'name_ru')
     ordering = ('order', 'name')
+    inlines = [ScentCategoryInline]
     fieldsets = (
         (None, {'fields': ('name', 'name_ru', 'description', 'description_ru', 'image', 'order')}),
     )
@@ -264,4 +275,20 @@ class ScentAdmin(admin.ModelAdmin):
     def display_name(self, obj):
         return obj.display_name()
     display_name.short_description = _('Название аромата')
+
+
+@admin.register(ScentCategory)
+class ScentCategoryAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'name_ru', 'group', 'order')
+    search_fields = ('name', 'name_ru')
+    ordering = ('order', 'name')
+    fieldsets = (
+        (None, {'fields': ('group', 'name', 'name_ru', 'order')}),
+    )
+
+    def display_name(self, obj):
+        return obj.display_name()
+    display_name.short_description = _('Название категории')
+
+
 
