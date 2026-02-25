@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import translation
+from django.core.validators import FileExtensionValidator
 
 
 class CategoryGroup(models.Model):
@@ -113,6 +114,78 @@ class Collection(models.Model):
         if lang.startswith('ru'):
             return self.description_ru or self.description_uk or self.description or ''
         return self.description_uk or self.description_ru or self.description or ''
+
+
+class HomeBanner(models.Model):
+    title_uk = models.CharField(max_length=160, blank=True, verbose_name='Заголовок (укр)')
+    title_ru = models.CharField(max_length=160, blank=True, null=True, verbose_name='Заголовок (рус)')
+    subtitle_uk = models.TextField(blank=True, verbose_name='Текст (укр)')
+    subtitle_ru = models.TextField(blank=True, null=True, verbose_name='Текст (рус)')
+    cta_text_uk = models.CharField(max_length=80, blank=True, verbose_name='Текст кнопки (укр)')
+    cta_text_ru = models.CharField(max_length=80, blank=True, null=True, verbose_name='Текст кнопки (рус)')
+    cta_url = models.CharField(max_length=200, blank=True, verbose_name='Ссылка кнопки')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок отображения')
+    duration_seconds = models.PositiveIntegerField(default=4, verbose_name='Время показа (сек)')
+    media = models.FileField(
+        upload_to='home_banner/',
+        blank=True,
+        null=True,
+        verbose_name='Медиа',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp', 'mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v'])]
+    )
+    is_active = models.BooleanField(default=True, verbose_name='Активный')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
+
+    class Meta:
+        verbose_name = 'Баннер главной страницы'
+        verbose_name_plural = 'Баннер главной страницы'
+        ordering = ['-is_active', 'order', '-updated_at', '-id']
+
+    def __str__(self):
+        return self.display_title() or f'Banner #{self.id}'
+
+    def display_title(self):
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('uk'):
+            return self.title_uk or self.title_ru or ''
+        if lang.startswith('ru'):
+            return self.title_ru or self.title_uk or ''
+        return self.title_uk or self.title_ru or ''
+
+    def display_subtitle(self):
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('uk'):
+            return self.subtitle_uk or self.subtitle_ru or ''
+        if lang.startswith('ru'):
+            return self.subtitle_ru or self.subtitle_uk or ''
+        return self.subtitle_uk or self.subtitle_ru or ''
+
+    def display_cta_text(self):
+        lang = (translation.get_language() or '').lower()
+        if lang.startswith('uk'):
+            return self.cta_text_uk or self.cta_text_ru or ''
+        if lang.startswith('ru'):
+            return self.cta_text_ru or self.cta_text_uk or ''
+        return self.cta_text_uk or self.cta_text_ru or ''
+
+    @property
+    def is_video(self):
+        if not self.media or not self.media.name:
+            return False
+        ext = os.path.splitext(self.media.name)[1].lower().lstrip('.')
+        return ext in {'mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v'}
+
+    @property
+    def duration_ms(self) -> int:
+        try:
+            sec = int(self.duration_seconds or 4)
+        except Exception:
+            sec = 4
+        if sec < 1:
+            sec = 1
+        if sec > 60:
+            sec = 60
+        return sec * 1000
 
 
 class CollectionItem(models.Model):
@@ -459,6 +532,15 @@ def delete_candle_image_file(sender, instance, **kwargs):
         try:
             if os.path.isfile(instance.image.path):
                 os.remove(instance.image.path)
+        except Exception:
+            pass
+
+@receiver(post_delete, sender=HomeBanner)
+def delete_home_banner_media(sender, instance, **kwargs):
+    if instance.media and instance.media.name:
+        try:
+            if os.path.isfile(instance.media.path):
+                os.remove(instance.media.path)
         except Exception:
             pass
 

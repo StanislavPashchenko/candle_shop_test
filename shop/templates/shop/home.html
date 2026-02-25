@@ -4,6 +4,26 @@
 {% block content %}
 <section class="hero-banner" aria-label="{% trans "Главный баннер" %}">
     <div class="slides">
+        {% if banners %}
+        {% for banner in banners %}
+        <div class="slide{% if forloop.first %} is-active{% endif %}" data-duration="{{ banner.duration_seconds }}"{% if not banner.is_video %} style="background-image:url('{{ banner.media.url }}')"{% endif %}>
+            {% if banner.is_video %}
+            <video class="hero-banner__media" autoplay muted loop playsinline>
+                <source src="{{ banner.media.url }}">
+            </video>
+            {% endif %}
+            <div class="slide-caption">
+                <h2>{% if banner.display_title %}{{ banner.display_title }}{% else %}{% trans "Good Karma Light — уют в каждом аромате" %}{% endif %}</h2>
+                <p>{% if banner.display_subtitle %}{{ banner.display_subtitle }}{% else %}{% trans "Тепло, мягкий свет и тонкие композиции для дома и подарков." %}{% endif %}</p>
+                {% if banner.display_cta_text %}
+                <a href="{% if banner.cta_url %}{{ banner.cta_url }}{% else %}{% url 'product_list' %}{% endif %}" class="hero-cta-btn">{{ banner.display_cta_text }}</a>
+                {% else %}
+                <a href="{% url 'product_list' %}" class="hero-cta-btn">{% trans "Смотреть коллекцию" %}</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
         <div class="slide is-active" style="background-image:url('{{ MEDIA_URL }}candles/banner/banner1.jpg')">
             <div class="slide-caption">
                 <h2>{% trans "Good Karma Light — уют в каждом аромате" %}</h2>
@@ -23,6 +43,7 @@
                 <p>{% trans "Откройте свежие авторские ароматы для особенных вечеров." %}</p>
             </div>
         </div>
+        {% endif %}
     </div>
     <div class="banner-controls">
         <div class="dots"></div>

@@ -15,6 +15,7 @@ from .models import (
     CandleImage,
     Collection,
     CollectionItem,
+    HomeBanner,
     Order,
     OrderItem,
     ProductOption,
@@ -133,6 +134,18 @@ class CollectionAdmin(admin.ModelAdmin):
         count = obj.items.count()
         return f'{count}/6'
     items_count.short_description = _('Товаров')
+
+
+@admin.register(HomeBanner)
+class HomeBannerAdmin(admin.ModelAdmin):
+    list_display = ('display_title', 'is_active', 'order', 'duration_seconds', 'updated_at')
+    list_filter = ('is_active',)
+    search_fields = ('title_uk', 'title_ru')
+    ordering = ('-is_active', 'order', '-updated_at', '-id')
+    fieldsets = (
+        (None, {'fields': ('is_active', 'media', 'order', 'duration_seconds')}),
+        ('Текст', {'fields': ('title_uk', 'title_ru', 'subtitle_uk', 'subtitle_ru', 'cta_text_uk', 'cta_text_ru', 'cta_url')}),
+    )
 
 
 class CandleImageInline(_NestedTabularInline):

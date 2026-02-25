@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import translation
-from .models import Candle, Collection, CollectionItem, ProductOption, ProductOptionValue, OrderItemOption
+from .models import Candle, Collection, CollectionItem, HomeBanner, ProductOption, ProductOptionValue, OrderItemOption
 from django.core.paginator import Paginator
 from django.db.models import Q, Case, When, Value, IntegerField, Prefetch
 from django.db.models.functions import Lower
@@ -150,6 +150,11 @@ def home(request):
     
     # Get collections for mood section
     collections = Collection.objects.all().order_by('order', 'code')
+
+    banners = list(HomeBanner.objects.filter(is_active=True).order_by('order', '-updated_at', '-id'))
+    if not banners:
+        banners = list(HomeBanner.objects.order_by('order', '-updated_at', '-id'))
+    banners = [b for b in banners if getattr(b, 'media', None)]
     
     cart = request.session.get('cart', {})
     cart_count = _get_cart_count(cart)
@@ -159,7 +164,8 @@ def home(request):
         'candles': candles, 
         'cart_count': cart_count,
         'collections': collections,
-        'candles_with_options_ids': candles_with_options_ids
+        'candles_with_options_ids': candles_with_options_ids,
+        'banners': banners,
     })
 
 

@@ -442,17 +442,21 @@ document.addEventListener('click', function(e){
     let timer = null;
 
     // create dots
-    slides.forEach((s, i) =>{
-        const btn = document.createElement('button');
-        if(i===0) btn.classList.add('active');
-        btn.addEventListener('click', ()=> go(i));
-        dotsWrap.appendChild(btn);
-    });
+    if(dotsWrap){
+        slides.forEach((s, i) =>{
+            const btn = document.createElement('button');
+            if(i===0) btn.classList.add('active');
+            btn.addEventListener('click', ()=> { go(i); resetTimer(); });
+            dotsWrap.appendChild(btn);
+        });
+    }
 
     function setActive(i){
         slides.forEach((s, k)=> s.classList.toggle('is-active', k===i));
-        const dots = dotsWrap.querySelectorAll('button');
-        dots.forEach((d,k)=> d.classList.toggle('active', k===i));
+        if(dotsWrap){
+            const dots = dotsWrap.querySelectorAll('button');
+            dots.forEach((d,k)=> d.classList.toggle('active', k===i));
+        }
         idx = i;
     }
 
@@ -462,22 +466,33 @@ document.addEventListener('click', function(e){
 
     function nextSlide(){
         go(idx+1);
+        resetTimer();
     }
 
     // bind prev/next only if present (buttons were removed for a cleaner banner)
     if(next) next.addEventListener('click', ()=>{ nextSlide(); resetTimer(); });
     if(prev) prev.addEventListener('click', ()=>{ go(idx-1); resetTimer(); });
 
+    function durationFor(i){
+        const el = slides[i];
+        let sec = parseInt(el.getAttribute('data-duration'), 10);
+        if(!Number.isFinite(sec) || sec <= 0) sec = 4;
+        sec = Math.max(1, Math.min(sec, 60));
+        return sec * 1000;
+    }
+
     function startTimer(){
-        // autoplay every 4 seconds on all devices
-        timer = setInterval(nextSlide, 4000);
+        timer = setTimeout(nextSlide, durationFor(idx));
     }
     function resetTimer(){
-        if(timer) clearInterval(timer);
+        if(timer){
+            clearTimeout(timer);
+            timer = null;
+        }
         startTimer();
     }
 
-    banner.addEventListener('mouseenter', ()=> { if(timer) clearInterval(timer); });
+    banner.addEventListener('mouseenter', ()=> { if(timer) { clearTimeout(timer); timer = null; } });
     banner.addEventListener('mouseleave', ()=> startTimer());
 
     startTimer();
