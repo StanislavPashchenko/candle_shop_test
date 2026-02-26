@@ -546,10 +546,21 @@ def delete_product_option_value_image(sender, instance, **kwargs):
             pass
 
 @receiver(post_delete, sender=HomeBanner)
+@receiver(post_delete, sender=Collection)
+def delete_collection_banner(sender, instance, **kwargs):
+    if instance.banner and instance.banner.name:
+        try:
+            if os.path.isfile(instance.banner.path):
+                os.remove(instance.banner.path)
+        except Exception:
+            pass
+
+
 def delete_home_banner_media(sender, instance, **kwargs):
     if instance.media and instance.media.name:
         try:
             if os.path.isfile(instance.media.path):
+                os.remove(instance.media.path)
                 os.remove(instance.media.path)
         except Exception:
             pass
