@@ -535,6 +535,16 @@ def delete_candle_image_file(sender, instance, **kwargs):
         except Exception:
             pass
 
+
+@receiver(post_delete, sender=ProductOptionValue)
+def delete_product_option_value_image(sender, instance, **kwargs):
+    if instance.image and instance.image.name:
+        try:
+            if os.path.isfile(instance.image.path):
+                os.remove(instance.image.path)
+        except Exception:
+            pass
+
 @receiver(post_delete, sender=HomeBanner)
 def delete_home_banner_media(sender, instance, **kwargs):
     if instance.media and instance.media.name:
