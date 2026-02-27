@@ -31,19 +31,36 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING:
-# In production set the `DJANGO_SECRET_KEY` environment variable to a strong secret.
-# A default is kept here for local development only.
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-6r_&hxu5e@y-e03135od7@q0%sb@3e&#te^3i#e)6_xr6go4wz')
+DJANGO_ENV = (os.environ.get('DJANGO_ENV') or 'development').strip().lower()
+IS_PROD = DJANGO_ENV in {'prod', 'production'}
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Control debug with environment variable. Default True for local development.
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+# Control debug with environment variable. Default False for production.
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
+
+# If no SECRET_KEY is provided and DEBUG is False, the app should fail to start
+if not SECRET_KEY and not DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured("The DJANGO_SECRET_KEY environment variable must be set in production.")
+
+# Prevent accidental insecure production runs
+if IS_PROD and DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured("DJANGO_DEBUG must be False when DJANGO_ENV=production.")
+
+# Fallback for local development only
+if not SECRET_KEY:
+    SECRET_KEY = 'django-insecure-6r_&hxu5e@y-e03135od7@q0%sb@3e&#te^3i#e)6_xr6go4wz'
 
 ALLOWED_HOSTS = [
-    'candleshoptest.pythonanywhere.com',
-    '127.0.0.1',
-    'localhost',
+    h.strip()
+    for h in os.environ.get(
+        'ALLOWED_HOSTS',
+        'candleshoptest.pythonanywhere.com,127.0.0.1,localhost',
+    ).split(',')
+    if h.strip()
 ]
 
 
@@ -51,7 +68,21 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.ngrok-free.dev",
     "https://*.ngrok-free.app",
     "https://*.ngrok.io",
+    "https://candleshoptest.pythonanywhere.com",
 ]
+
+if IS_PROD:
+    SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'True').lower() == 'true'
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_SECURE_HSTS_SECONDS', '31536000') or '31536000')
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True').lower() == 'true'
+    SECURE_HSTS_PRELOAD = os.environ.get('DJANGO_SECURE_HSTS_PRELOAD', 'True').lower() == 'true'
+    SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'True').lower() == 'true'
+    CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'True').lower() == 'true'
+    SECURE_CONTENT_TYPE_NOSNIFF = os.environ.get('DJANGO_SECURE_CONTENT_TYPE_NOSNIFF', 'True').lower() == 'true'
+    SECURE_REFERRER_POLICY = os.environ.get('DJANGO_SECURE_REFERRER_POLICY', 'same-origin')
+    X_FRAME_OPTIONS = os.environ.get('DJANGO_X_FRAME_OPTIONS', 'DENY')
+    if os.environ.get('DJANGO_SECURE_PROXY_SSL_HEADER', 'True').lower() == 'true':
+        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -206,7 +237,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '')
 
-# Simple logging to console to help debug
+LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -217,13 +248,13 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG',
+        'level': LOG_LEVEL,
     },
     'loggers': {
         # ensure our app logs appear
         'shop': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': LOG_LEVEL,
             'propagate': False,
         },
     },
