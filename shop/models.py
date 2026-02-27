@@ -547,20 +547,22 @@ def delete_product_option_value_image(sender, instance, **kwargs):
 
 @receiver(post_delete, sender=Collection)
 def delete_collection_banner(sender, instance, **kwargs):
-    if instance.banner and instance.banner.name:
+    banner = getattr(instance, 'banner', None)
+    if banner and getattr(banner, 'name', None):
         try:
-            if os.path.isfile(instance.banner.path):
-                os.remove(instance.banner.path)
+            if os.path.isfile(banner.path):
+                os.remove(banner.path)
         except Exception:
             pass
 
 
 @receiver(post_delete, sender=HomeBanner)
 def delete_home_banner_media(sender, instance, **kwargs):
-    if instance.media and instance.media.name:
+    media = getattr(instance, 'media', None)
+    if media and getattr(media, 'name', None):
         try:
-            if os.path.isfile(instance.media.path):
-                os.remove(instance.media.path)
+            if os.path.isfile(media.path):
+                os.remove(media.path)
         except Exception:
             pass
 
