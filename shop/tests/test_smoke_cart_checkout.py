@@ -10,7 +10,10 @@ from django.urls import reverse
 from shop.models import Candle, Order, OrderItem
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+@override_settings(
+    MEDIA_ROOT=tempfile.mkdtemp(),
+    SECURE_SSL_REDIRECT=False,
+)
 class SmokeCartCheckoutTests(TestCase):
     def _create_candle(self) -> Candle:
         c = Candle.objects.create(
